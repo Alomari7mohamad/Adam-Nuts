@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#271913" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; form-action 'self' https://wa.me;" />
+
+  <title>محمص آدم · Adam Roastery — مكسرات وتمور فاخرة</title>
+  <meta name="description" content="محمص آدم — أجود أنواع التمور والمكسرات والبهارات والقهوة الفاخرة. اطلب الآن عبر واتساب مع توصيل سريع. פיצוחי אדם — פיצוחים, תמרים, תבלינים וקפה משובחים." />
+  <meta name="keywords" content="مكسرات, تمر, بهارات, قهوة, محمص آدم, פיצוחים, תמרים, Adam Roastery" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="محمص آدم · Adam Roastery" />
+  <meta property="og:description" content="أجود أنواع التمور والمكسرات الفاخرة" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/images/logo/logo.svg.png" />
+
+  <link rel="icon" type="image/jpeg" href="assets/images/logo/logo.svg.png" />
+  <link rel="apple-touch-icon" href="assets/images/logo/logo.svg.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=Tajawal:wght@400;500;700&family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@400;500;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body data-page="home">
+  <div class="app-shell" id="app">
+
+    <!-- Hero -->
+    <section class="hero">
+      <p class="hero-eyebrow"><span class="bob">✦</span> <span data-i18n="hero_welcome"></span></p>
+      <h1 class="hero-title"><span class="store-name"></span> <span class="dot">.</span></h1>
+      <p class="hero-sub store-tag"></p>
+      <div class="hero-actions">
+        <a href="menu.html" class="btn btn-gold" data-i18n="hero_cta"></a>
+        <button class="btn btn-outline" data-action="scroll-cats" id="browseBtn" data-i18n="browse_menu"></button>
+      </div>
+    </section>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <div class="search-bar">
+        <span class="search-ico" aria-hidden="true"></span>
+        <input id="search" type="text" inputmode="search" data-i18n-ph="search_placeholder" aria-label="search" maxlength="60" />
+        <button class="search-clear" aria-label="clear">✕</button>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="flourish">✦</div>
+    <div class="cats" id="cats" role="list" aria-label="categories"></div>
+
+    <!-- Best sellers -->
+    <section class="section reveal">
+      <div class="section-head">
+        <h2 class="section-title"><span class="crown" id="crownSlot"></span><span data-i18n="bestsellers"></span></h2>
+        <a class="link-all" href="menu.html"><span data-i18n="view_all"></span></a>
+      </div>
+      <div class="product-rail" id="bestsellers"></div>
+    </section>
+
+    <!-- Weekly offer + offers grid -->
+    <section class="section" id="offers">
+      <div class="offer-banner reveal">
+        <div class="offer-ico" id="offerIcoSlot"></div>
+        <div class="offer-text">
+          <div class="offer-title" data-i18n="weekly_offer"></div>
+          <div class="offer-desc" data-i18n="weekly_offer_text"></div>
+        </div>
+        <a href="menu.html" class="btn btn-gold" data-i18n="shop_now"></a>
+      </div>
+      <div class="section-head">
+        <h2 class="section-title"><span data-i18n="offers"></span></h2>
+      </div>
+      <div class="product-grid" id="offers-grid"></div>
+    </section>
+
+    <!-- Catalog -->
+    <section class="section" id="catalog-section">
+      <div class="section-head">
+        <h2 class="section-title" id="catalog-title"></h2>
+        <a class="link-all" href="menu.html"><span data-i18n="view_all"></span></a>
+      </div>
+      <div class="subcats" id="subcats" role="list" aria-label="subcategories"></div>
+      <div class="product-grid" id="catalog"></div>
+    </section>
+
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/translations.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/accessibility.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/checkout.js"></script>
+  <script src="js/animations.js"></script>
+</body>
+</html>

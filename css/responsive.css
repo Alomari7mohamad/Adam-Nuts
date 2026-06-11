@@ -1,0 +1,76 @@
+/* =====================================================================
+   responsive.css — breakpoints & accessibility theme overrides
+   Mobile-first base lives in style.css; this scales up & themes.
+   ===================================================================== */
+
+/* Small phones */
+@media (max-width: 360px) {
+  :root { --header-h: 58px; }
+  .hero-title { font-size: 30px; }
+  .product-grid { gap: 10px; }
+  .cat-thumb { width: 62px; height: 62px; }
+  .cat { width: 70px; }
+}
+
+/* Larger phones / small tablets: roomier grid inside shell */
+@media (min-width: 440px) {
+  .product-grid { gap: 16px; }
+  .pc-name { font-size: 15px; }
+}
+
+/* Tablet & desktop: show app-shell as a framed "device", add ambient bg */
+@media (min-width: 600px) {
+  body {
+    background:
+      radial-gradient(circle at 20% 10%, rgba(202,166,91,0.10), transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(202,166,91,0.08), transparent 40%),
+      var(--brown-900);
+    padding: 22px 0;
+  }
+  .app-shell {
+    border-radius: 32px;
+    min-height: calc(100vh - 44px);
+    border: 1px solid rgba(202,166,91,0.25);
+  }
+  .site-header { border-radius: 32px 32px 0 0; }
+  .bottom-nav { border-radius: 0 0 32px 32px; }
+}
+
+/* Wide desktop: 3-column product grid for a richer catalog view */
+@media (min-width: 900px) {
+  :root { --shell-max: 920px; }
+  .product-grid { grid-template-columns: repeat(3, 1fr); }
+  .product-rail .product-card { flex-basis: 30%; }
+  .hero { min-height: 380px; }
+}
+
+@media (min-width: 1200px) {
+  :root { --shell-max: 1040px; }
+  .product-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ---------- Accessibility: High Contrast ---------- */
+html.a11y-contrast {
+  --bg: #fffdf8;
+  --card: #ffffff;
+  --ink: #120a04;
+  --brown-700: #1d1209;
+  --brown-800: #160d05;
+  --muted: #4a3a26;
+  --gold-dark: #6e4e0c;
+  --line: rgba(0,0,0,0.45);
+}
+html.a11y-contrast .product-card,
+html.a11y-contrast .search-bar,
+html.a11y-contrast .field input,
+html.a11y-contrast .field textarea { border-width: 2px; }
+html.a11y-contrast .pc-name,
+html.a11y-contrast .section-title { color: #120a04; }
+html.a11y-contrast .btn-gold { background: #6e4e0c; color: #fff; }
+
+/* ---------- Accessibility: Grayscale ---------- */
+html.a11y-grayscale { filter: grayscale(1); }
+
+/* When fonts are scaled very large, let cards stack to keep readable */
+html.a11y-bigfont .product-grid { grid-template-columns: 1fr; }
+html.a11y-bigfont .pc-name { min-height: auto; }
