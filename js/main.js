@@ -12,7 +12,7 @@
   const ICONS = {
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
     cart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.4 12.3a1 1 0 0 0 1 .8h8.7a1 1 0 0 0 1-.8L21 8H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg>',
-    heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7-4.4-9.3-8.6C1 8 2.8 4.5 6.2 4.5c2 0 3.2 1.1 3.8 2.1.6-1 1.8-2.1 3.8-2.1 3.4 0 5.2 3.5 3.5 6.9C19 15.6 12 20 12 20Z"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"/></svg>',
     home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9"/></svg>',
     tag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l8 8-9 9z"/><circle cx="8" cy="8" r="1.4"/></svg>',
     user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>',
@@ -27,7 +27,7 @@
     gift: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 11h16v9H4z"/><path d="M2 7h20v4H2zM12 7v13M12 7S10.5 3 8.5 3 6 5 7 7M12 7s1.5-4 3.5-4S18 5 17 7"/></svg>',
     chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
     location: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg>',
-    access: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="1.6"/><path d="M5 8h14M12 8v6m0 0-3 6m3-6 3 6"/></svg>',
+    access: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><circle cx="12" cy="7" r="1.35" fill="currentColor" stroke="none"/><path d="M7.8 10.1c2.8 1 5.6 1 8.4 0M12 10.4v4.1m0 0-3 4m3-4 3 4"/></svg>',
     fontUp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18 8 6l5 12M4.5 14h7M16 9v8m-4-4h8"/></svg>',
     fontDown: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18 8 6l5 12M4.5 14h7M12 13h8"/></svg>',
     contrast: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18" /><path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor"/></svg>',
@@ -39,6 +39,7 @@
     store: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 9 5 4h14l1 5M4 9h16M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M4 9a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0"/></svg>',
     truck: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M2 6h11v9H2zM13 9h4l3 3v3h-7z"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>',
     phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 3h3l2 5-2.5 1.5a11 11 0 0 0 5 5L19 14l2 5v3a1 1 0 0 1-1 1A17 17 0 0 1 4 4a1 1 0 0 1 1-1Z"/></svg>',
+    calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>',
     instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>',
     info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
     shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>',
@@ -164,7 +165,7 @@
     applyLangToHtml();
     applyTranslations(document);
     fillBrand();
-    document.querySelectorAll(".lang-current").forEach(n => n.textContent = t("langName"));
+    document.querySelectorAll(".lang-current").forEach(n => n.textContent = t("switchTo"));
     window.AdamProducts && window.AdamProducts.renderAll();
     window.AdamCart && window.AdamCart.render();
     window.dispatchEvent(new CustomEvent("adam:lang"));
@@ -197,6 +198,16 @@
     if (overlay) overlay.classList.remove("show");
     document.body.classList.remove("scroll-lock");
   }
+  function toggleDrawer(id) {
+    const drawer = document.getElementById(id);
+    if (!drawer) return;
+    if (drawer.classList.contains("show")) {
+      closeAllDrawers();
+      return;
+    }
+    closeAllDrawers();
+    openDrawer(id);
+  }
 
   /* ---------------- External links (safe) ---------------- */
   function openExternal(url) {
@@ -206,6 +217,7 @@
   function whatsappLink(text) {
     return "https://wa.me/" + DATA.STORE.whatsapp + (text ? "?text=" + encodeURIComponent(text) : "");
   }
+  function phoneLink() { return "tel:0" + DATA.STORE.whatsapp.slice(3); }
 
   /* ---------------- Bottom-nav wiring ---------------- */
   function initNav() {
@@ -214,20 +226,14 @@
         const target = btn.dataset.nav;
         if (target === "cart") { e.preventDefault(); window.AdamCart && window.AdamCart.open(); }
         else if (target === "favorites") { e.preventDefault(); window.AdamProducts && window.AdamProducts.openFavorites(); }
-        else if (target === "account") { e.preventDefault(); openDrawer("accountDrawer"); }
-        else if (target === "offers") {
+        else if (target === "hours") { e.preventDefault(); toggleDrawer("hoursDrawer"); }
+        else if (target === "catalog") {
           e.preventDefault();
-          const sec = document.getElementById("offers");
-          if (sec) { sec.scrollIntoView({ behavior: "smooth", block: "start" }); setActiveNav("offers"); }
-          else location.href = "index.html#offers";
+          closeAllDrawers();
+          const cats = document.getElementById("cats");
+          if (cats) cats.scrollIntoView({ behavior: "smooth", block: "start" });
         }
-        else if (target === "home") {
-          if (document.body.dataset.page === "home") {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: "smooth" });
-            setActiveNav("home");
-          }
-        }
+        else if (target === "account") { e.preventDefault(); openDrawer("accountDrawer"); }
       });
     });
   }
@@ -253,7 +259,7 @@
     ICONS, DATA, lang, t, nameOf, escapeHtml, el, money, fmtNum,
     unitPrice, oldUnitPrice, productById, toast,
     sanitizeInput, isValidName,
-    applyTranslations, rerenderAll, openDrawer, closeAllDrawers,
+    applyTranslations, rerenderAll, openDrawer, closeAllDrawers, toggleDrawer,
     openExternal, whatsappLink, setActiveNav, icon: k => ICONS[k] || ""
   };
 
@@ -279,14 +285,11 @@
     const header = el("header", { class: "site-header" });
     header.innerHTML =
       '<div class="header-left">' +
-        '<button class="icon-btn whatsapp" data-action="whatsapp" data-i18n-aria="whatsapp" title="WhatsApp">' + I("whatsapp") + '</button>' +
         '<button class="lang-pill" data-action="lang" aria-label="language">' + I("globe") + '<span class="lang-current"></span></button>' +
       '</div>' +
       '<a href="index.html" class="brand-badge" aria-label="' + escapeHtml(nameOf(DATA.STORE.name)) + '"><img src="assets/images/logo/logo.svg.png" alt="' + escapeHtml(nameOf(DATA.STORE.name)) + '"></a>' +
       '<div class="header-right">' +
         '<button class="icon-btn" data-action="menu" data-i18n-aria="menu">' + I("menu") + '</button>' +
-        '<button class="icon-btn" data-action="open-cart" data-i18n-aria="cart" style="position:relative">' + I("cart") +
-          '<span class="nav-badge hidden" data-cart-count style="top:2px;inset-inline-end:2px">0</span></button>' +
       '</div>';
     app.prepend(header);
 
@@ -312,11 +315,11 @@
     // Bottom nav
     const nav = el("nav", { class: "bottom-nav", "aria-label": "main" });
     nav.innerHTML =
-      navItem("account", "user") +
+      '<a href="' + phoneLink() + '" class="nav-item" data-nav="contact">' + I("phone") + '<span data-i18n="contact_us"></span></a>' +
+      '<button class="nav-item" data-nav="hours">' + I("calendar") + '<span data-i18n="business_hours"></span></button>' +
+      '<button class="nav-item center" data-nav="cart"><span class="nav-badge hidden" data-cart-count>0</span><span class="nav-ico">' + I("cart") + '</span><span data-i18n="cart"></span></button>' +
       navItem("favorites", "heart", "fav") +
-      '<a href="index.html" class="nav-item center" data-nav="home"><span class="nav-ico">' + I("home") + '</span><span data-i18n="home"></span></a>' +
-      navItem("offers", "tag") +
-      navItem("cart", "cart", "cart");
+      '<button class="nav-item" data-nav="catalog">' + I("store") + '<span data-i18n="menu"></span></button>';
     app.append(nav);
 
     // Floating cart
@@ -332,9 +335,9 @@
     // FAB stack
     const fabs = el("div", { class: "fab-stack" });
     fabs.innerHTML =
-      '<button class="fab whatsapp" data-action="whatsapp" data-i18n-aria="whatsapp">' + I("whatsapp") + '</button>' +
+      '<a class="fab instagram" href="' + DATA.STORE.instagram + '" target="_blank" rel="noopener noreferrer" aria-label="Instagram">' + I("instagram") + '</a>' +
       '<button class="fab gold" data-action="location" data-i18n-aria="store_location">' + I("location") + '</button>' +
-      '<button class="fab" id="a11yToggle" data-i18n-aria="accessibility">' + I("access") + '</button>' +
+      '<button class="fab accessibility-fab" id="a11yToggle" data-i18n-aria="accessibility">' + I("access") + '</button>' +
       '<button class="fab scrolltop" id="scrollTop" data-i18n-aria="scroll_top">' + I("arrowUp") + '</button>';
     document.body.append(fabs);
 
@@ -361,33 +364,48 @@
     const frag = document.createElement("div");
     // Side menu
     const cats = DATA.CATEGORIES.map(c =>
-      '<a href="menu.html?cat=' + c.id + '">' + I("chevron") + '<span>' + escapeHtml(nameOf(c.name)) + '</span></a>'
+      '<a href="index.html?cat=' + c.id + '#catalog-section">' + I("store") + '<span>' + escapeHtml(nameOf(c.name)) + '</span></a>'
     ).join("");
     frag.innerHTML =
-      drawerShell("sideMenu", "menu", "menu", "sideMenuBody",
-        '<div class="drawer-body" style="border-top:1px solid var(--line)">' +
+      '<aside class="drawer" id="sideMenu" role="dialog" aria-modal="true">' +
+        '<div class="drawer-head"><h3>' + I("menu") + '<span data-i18n="menu"></span></h3>' +
+        '<button class="close-x" data-action="close-drawer" data-i18n-aria="back">' + I("close") + '</button></div>' +
+        '<div class="drawer-body" id="sideMenuBody">' +
         '<div class="menu-list">' +
-          '<a href="index.html">' + I("home") + '<span data-i18n="home"></span></a>' +
-          '<a href="menu.html">' + I("store") + '<span data-i18n="all_products"></span></a>' +
-          '<button data-action="open-cart">' + I("cart") + '<span data-i18n="your_cart"></span></button>' +
-          '<button data-nav="favorites">' + I("heart") + '<span data-i18n="favorites"></span></button>' +
-          '<button data-action="qr">' + I("qr") + '<span data-i18n="qr_title"></span></button>' +
-          '<div class="menu-sep"></div>' +
-          '<div style="font-size:12px;color:var(--muted);padding:4px 12px" data-i18n="categories"></div>' +
+          '<a href="index.html#catalog-section">' + I("menu") + '<span data-i18n="menu"></span></a>' +
           cats +
           '<div class="menu-sep"></div>' +
-          '<a href="' + whatsappLink("") + '" target="_blank" rel="noopener noreferrer">' + I("whatsapp") + '<span data-i18n="whatsapp"></span></a>' +
+          '<a href="index.html?cat=all#catalog-section">' + I("store") + '<span data-i18n="all_products"></span></a>' +
+          '<button data-action="open-cart">' + I("cart") + '<span data-i18n="your_cart"></span></button>' +
+          '<button data-action="qr">' + I("qr") + '<span data-i18n="qr_title"></span></button>' +
           '<a href="' + DATA.STORE.location + '" target="_blank" rel="noopener noreferrer">' + I("location") + '<span data-i18n="store_location"></span></a>' +
-          '<a href="privacy.html">' + I("shield") + '<span data-i18n="privacy"></span></a>' +
-          '<a href="terms.html">' + I("doc") + '<span data-i18n="terms"></span></a>' +
-        '</div></div>') +
+        '</div></div></aside>' +
 
-      // Cart drawer
-      drawerShell("cartDrawer", "your_cart", "cart", "cartBody",
-        '<div class="drawer-foot" id="cartFoot"></div>') +
+      // Cart bottom sheet
+      '<aside class="drawer bottom-sheet cart-sheet" id="cartDrawer" role="dialog" aria-modal="true">' +
+        '<div class="drawer-head"><h3>' + I("cart") + '<span data-i18n="your_cart"></span></h3>' +
+        '<button class="close-x" data-action="close-drawer" data-i18n-aria="back">' + I("close") + '</button></div>' +
+        '<div class="drawer-body" id="cartBody"></div>' +
+        '<div class="drawer-foot" id="cartFoot"></div>' +
+      '</aside>' +
 
-      // Favourites drawer
-      drawerShell("favDrawer", "favorites", "heart", "favBody") +
+      // Favourites bottom sheet
+      '<aside class="drawer bottom-sheet favorites-sheet" id="favDrawer" role="dialog" aria-modal="true">' +
+        '<div class="drawer-head"><h3>' + I("heart") + '<span data-i18n="favorites"></span></h3>' +
+        '<button class="close-x" data-action="close-drawer" data-i18n-aria="back">' + I("close") + '</button></div>' +
+        '<div class="drawer-body" id="favBody"></div>' +
+      '</aside>' +
+
+      // Business hours bottom sheet
+      '<aside class="drawer bottom-sheet" id="hoursDrawer" role="dialog" aria-modal="true">' +
+        '<div class="drawer-head"><h3>' + I("calendar") + '<span data-i18n="business_hours"></span></h3>' +
+        '<button class="close-x" data-action="close-drawer" data-i18n-aria="back">' + I("close") + '</button></div>' +
+        '<div class="drawer-body hours-body">' +
+          '<div class="hours-icon">' + I("calendar") + '</div>' +
+          '<p data-i18n="business_hours_text"></p>' +
+          '<a class="btn btn-gold btn-block" href="' + phoneLink() + '">' + I("phone") + '<span data-i18n="contact_us"></span></a>' +
+        '</div>' +
+      '</aside>' +
 
       // Account drawer
       drawerShell("accountDrawer", "account_title", "user", "accountBodyInner") +
@@ -431,7 +449,7 @@
     applyLangToHtml();
     applyTranslations(document);
     fillBrand();
-    document.querySelectorAll(".lang-current").forEach(n => n.textContent = t("langName"));
+    document.querySelectorAll(".lang-current").forEach(n => n.textContent = t("switchTo"));
 
     initHeader();
     initNav();

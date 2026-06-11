@@ -6,7 +6,7 @@
   const A = window.Adam;
   const DATA = window.AdamData;
 
-  const form = { name: "", type: "pickup", location: "", notes: "" };
+  const form = { name: "", type: "pickup", location: "", currentLocation: "", notes: "" };
 
   /* ---------- Delivery fee derivation ---------- */
   function normalize(s) {
@@ -61,20 +61,25 @@
     const pickup = A.el("button", { type: "button", class: "otype" + (form.type === "pickup" ? " active" : ""), html: A.icon("store") + "<span>" + A.escapeHtml(A.t("pickup")) + "</span>" });
     const deliver = A.el("button", { type: "button", class: "otype" + (form.type === "delivery" ? " active" : ""), html: A.icon("truck") + "<span>" + A.escapeHtml(A.t("delivery")) + "</span>" });
     pickup.addEventListener("click", () => { form.type = "pickup"; refresh(); });
-    deliver.addEventListener("click", () => { form.type = "delivery"; refresh(); });
+    deliver.addEventListener("click", () => { form.type = "delivery"; refresh(); requestCurrentLocation(); });
     const typeWrap = A.el("div", { class: "field" },
       A.el("label", { html: A.escapeHtml(A.t("order_type")) + ' <span class="req">*</span>' }),
       A.el("div", { class: "order-type" }, pickup, deliver)
     );
 
     // ----- Delivery fields -----
-    const locField = field("location", "delivery_location", "delivery_location_ph", "input", true);
+    const locField = field("location", "delivery_location", "delivery_location_ph", "input", false);
     locField.input.value = form.location;
     locField.input.addEventListener("input", () => { form.location = locField.input.value; validateField(locField); updateTotals(); });
     const notesField = field("notes", "delivery_notes", "delivery_notes_ph", "textarea", false);
     notesField.input.value = form.notes;
     notesField.input.addEventListener("input", () => { form.notes = notesField.input.value; });
-    const deliveryWrap = A.el("div", { class: "delivery-fields" + (form.type === "delivery" ? " show" : "") }, locField.wrap, notesField.wrap);
+    const currentLocationBox = A.el("div", { class: "current-location-box" },
+      A.el("div", { class: "current-location-text", text: form.currentLocation ? A.t("current_location_ready") + ": " + form.currentLocation : A.t("current_location_waiting") }),
+      A.el("button", { type: "button", class: "btn btn-outline btn-block use-location", html: A.icon("location") + "<span>" + A.escapeHtml(A.t("use_current_location")) + "</span>" })
+    );
+    currentLocationBox.querySelector("button").addEventListener("click", requestCurrentLocation);
+    const deliveryWrap = A.el("div", { class: "delivery-fields" + (form.type === "delivery" ? " show" : "") }, currentLocationBox, locField.wrap, notesField.wrap);
 
     // ----- Totals -----
     const totals = A.el("div", { class: "totals", id: "ckTotals" });
@@ -154,7 +159,11 @@
     const body = document.getElementById("checkoutBody");
     const r = body._refs;
     let ok = validateField(r.nameField);
-    if (form.type === "delivery") ok = validateField(r.locField) && ok;
+    if (form.type === "delivery") {
+      const hasDeliveryLocation = !!A.sanitizeInput(form.location, { maxLen: MAXLEN.location }) || !!form.currentLocation;
+      r.locField.wrap.classList.toggle("invalid", !hasDeliveryLocation);
+      ok = hasDeliveryLocation && ok;
+    }
     if (!ok) { A.toast(A.t("required"), "info"); return; }
     if (!window.AdamCart.getItems().length) return;
     if (busy) return;
@@ -165,9 +174,13 @@
       name: A.sanitizeInput(form.name, { maxLen: MAXLEN.name }),
       type: form.type === "delivery" ? "delivery" : "pickup",
       location: A.sanitizeInput(form.location, { maxLen: MAXLEN.location }),
+      currentLocation: A.sanitizeInput(form.currentLocation, { maxLen: 160 }),
       notes: A.sanitizeInput(form.notes, { maxLen: MAXLEN.notes, multiline: true })
     };
     A.openExternal(A.whatsappLink(buildMessage(clean)));
+    window.AdamCart.clear();
+    A.closeAllDrawers();
+    render();
   }
 
   function buildMessage(clean) {
@@ -185,15 +198,19 @@
     // Single-line sanitised fields cannot inject newlines to forge other rows.
     L.push("👤 " + A.t("wa_name") + ": " + clean.name);
     L.push("🧾 " + A.t("wa_type") + ": " + (isDelivery ? A.t("wa_delivery_type") : A.t("wa_pickup")));
-    if (isDelivery) L.push("📍 " + A.t("wa_location") + ": " + clean.location);
+    if (isDelivery) {
+      if (clean.currentLocation) L.push("📍 " + A.t("wa_current_location") + ": " + clean.currentLocation);
+      L.push("📍 " + A.t("wa_location") + ": " + clean.location);
+    }
     L.push("");
     L.push("🛒 " + A.t("wa_products") + ":");
-    items.forEach(({ product: p, weight, qty, line: lp }, i) => {
+    items.forEach(({ product: p, weight, qty, notes, line: lp }, i) => {
       const wl = p.unit === "kg"
         ? (weight >= 1000 ? "1kg" : weight + "g")
         : (A.lang() === "he" ? "יחידה" : "قطعة");
       L.push("  " + (i + 1) + ") " + A.nameOf(p.name));
       L.push("       " + wl + " × " + qty + "  =  " + A.money(lp));
+      if (notes) L.push("       " + A.t("wa_notes") + ": " + notes);
     });
     L.push("");
     L.push(line);
@@ -203,6 +220,21 @@
     if (isDelivery && clean.notes) { L.push(""); L.push("📝 " + A.t("wa_notes") + ": " + clean.notes); }
     L.push(line);
     return L.join("\n");
+  }
+
+  function requestCurrentLocation() {
+    if (form.type !== "delivery" || !navigator.geolocation) return;
+    const body = document.getElementById("checkoutBody");
+    const status = body && body.querySelector(".current-location-text");
+    if (status) status.textContent = A.t("current_location_loading");
+    navigator.geolocation.getCurrentPosition(pos => {
+      const lat = pos.coords.latitude.toFixed(6);
+      const lng = pos.coords.longitude.toFixed(6);
+      form.currentLocation = "https://maps.google.com/?q=" + lat + "," + lng;
+      render();
+    }, () => {
+      if (status) status.textContent = A.t("current_location_failed");
+    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
   }
 
   function open() { render(); A.openDrawer("checkoutDrawer"); }

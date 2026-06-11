@@ -11,7 +11,7 @@
 
   const FAV_KEY = "adam_favs";
   const LOGO = "assets/images/logo/logo.svg.png";
-  const state = { cat: "all", sub: "all", q: "" };
+  const state = { cat: "nuts", sub: "all", q: "" };
 
   /* ---------- Favourites (localStorage) ---------- */
   // Hardened read: only keep string ids that map to a real product
@@ -41,15 +41,64 @@
   function gWord() { return A.lang() === "he" ? "גרם" : "غرام"; }
   function kgWord() { return A.lang() === "he" ? 'ק"ג' : "كيلو"; }
   function catById(id) { return DATA.CATEGORIES.find(c => c.id === id); }
+  function weightText(g) { return g >= 1000 ? "1 " + kgWord() : g + " " + gWord(); }
+  function priceUnitText(p, isKg, weight) {
+    if (isKg) return "/ " + weightText(weight);
+    if (p.fixedWeight) return "/ " + A.nameOf(p.fixedWeight);
+    return A.t("per_piece");
+  }
+  const PRODUCT_ORDER = {
+    nuts: [
+      "nuts-13", "nuts-10", "nuts-14", "nuts-7", "nuts-6",
+      "nuts-15", "nuts-16", "nuts-11", "nuts-8", "nuts-5"
+    ],
+    "natural-nuts": ["nat-7", "nat-8", "nat-9", "nat-6", "nat-2"],
+    espresso: ["esp-8", "esp-9", "esp-10"]
+  };
+  function sortProducts(list) {
+    return list.map((product, index) => ({ product, index })).sort((a, b) => {
+      if (a.product.cat !== b.product.cat) {
+        const ac = DATA.CATEGORIES.findIndex(c => c.id === a.product.cat);
+        const bc = DATA.CATEGORIES.findIndex(c => c.id === b.product.cat);
+        return ac - bc;
+      }
+      const order = PRODUCT_ORDER[a.product.cat] || [];
+      const ai = order.indexOf(a.product.id);
+      const bi = order.indexOf(b.product.id);
+      const ar = ai < 0 ? order.length + a.index : ai;
+      const br = bi < 0 ? order.length + b.index : bi;
+      return ar - br;
+    }).map(entry => entry.product);
+  }
+  function weightButtons(defaultW, onChange) {
+    let selected = defaultW;
+    const wrap = A.el("div", { class: "weight-buttons", role: "group", "aria-label": A.t("select_weight") });
+    DATA.WEIGHTS.forEach(g => {
+      const b = A.el("button", { type: "button", class: "weight-chip" + (g === selected ? " active" : ""), text: weightText(g), dataset: { weight: String(g) } });
+      b.addEventListener("click", () => {
+        selected = g;
+        wrap.querySelectorAll(".weight-chip").forEach(x => x.classList.toggle("active", +x.dataset.weight === selected));
+        onChange(selected);
+      });
+      wrap.append(b);
+    });
+    return { wrap, get value() { return selected; }, set value(v) { selected = +v; wrap.querySelectorAll(".weight-chip").forEach(x => x.classList.toggle("active", +x.dataset.weight === selected)); } };
+  }
 
   /* ---------- Card builder ---------- */
   function card(p) {
     const isKg = p.unit === "kg";
-    const defaultW = isKg ? 500 : 1000;
+    const defaultW = p.cat === "spices" ? 100 : 1000;
 
     const img = A.el("img", { src: p.img, alt: A.nameOf(p.name), loading: "lazy", decoding: "async" });
-    const media = A.el("button", { class: "pc-media", "aria-label": A.t("details") }, img);
+    const media = A.el("div", { class: "pc-media", role: "button", tabindex: "0", "aria-label": A.t("details") }, img);
     media.addEventListener("click", () => openQuickView(p));
+    media.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openQuickView(p);
+      }
+    });
 
     const badges = A.el("div", { class: "pc-badges" });
     if (p.bestseller) badges.append(A.el("span", { class: "badge badge-best", html: A.icon("star") + "<span>" + A.escapeHtml(A.t("bestseller_badge")) + "</span>" }));
@@ -73,38 +122,20 @@
     const oldEl = A.el("span", { class: "pc-old hidden" });
     const unitEl = A.el("span", { class: "pc-unit" });
     function paintPrice(w) {
+      if (p.customMix) {
+        priceEl.textContent = A.t("price_on_selection");
+        unitEl.textContent = "";
+        return;
+      }
       priceEl.innerHTML = '<span class="cur">₪</span>' + A.escapeHtml(A.fmtNum(A.unitPrice(p, w)));
       if (p.offer) { oldEl.textContent = A.money(A.oldUnitPrice(p, w)); oldEl.classList.remove("hidden"); }
-      unitEl.textContent = isKg ? "/ " + A.t("per_kg").replace(/^\//, "") : A.t("per_piece");
+      unitEl.textContent = priceUnitText(p, isKg, w);
     }
     paintPrice(defaultW);
     const priceRow = A.el("div", { class: "pc-price-row" }, priceEl, oldEl, unitEl);
 
-    // weight selector
-    let weightSel, controls;
-    if (isKg) {
-      weightSel = A.el("select", { "aria-label": A.t("select_weight") });
-      DATA.WEIGHTS.forEach(g => {
-        const o = A.el("option", { value: g, text: g >= 1000 ? "1 " + kgWord() : g + " " + gWord() });
-        if (g === defaultW) o.selected = true;
-        weightSel.append(o);
-      });
-      weightSel.addEventListener("change", () => paintPrice(+weightSel.value));
-      controls = A.el("div", { class: "weight-select" },
-        A.el("span", { class: "wlabel", text: A.t("weight") }), weightSel);
-    }
-
     const addBtn = A.el("button", { class: "add-btn", html: A.icon("cart") + "<span>" + A.escapeHtml(A.t("add_to_cart")) + "</span>" });
-    addBtn.addEventListener("click", () => {
-      const w = isKg ? +weightSel.value : 1000;
-      window.AdamCart.add(p.id, w, 1);
-      addBtn.classList.add("done");
-      addBtn.innerHTML = A.icon("check") + "<span>" + A.escapeHtml(A.t("added")) + "</span>";
-      setTimeout(() => {
-        addBtn.classList.remove("done");
-        addBtn.innerHTML = A.icon("cart") + "<span>" + A.escapeHtml(A.t("add_to_cart")) + "</span>";
-      }, 1300);
-    });
+    addBtn.addEventListener("click", () => openQuickView(p));
 
     const nameEl = A.el("button", { class: "pc-name", text: A.nameOf(p.name) });
     nameEl.addEventListener("click", () => openQuickView(p));
@@ -113,7 +144,6 @@
       nameEl,
       p.desc ? A.el("p", { class: "pc-desc", text: A.nameOf(p.desc) }) : null,
       priceRow,
-      isKg ? controls : A.el("div", { class: "pc-unit", text: A.t("per_piece") }),
       A.el("div", { class: "pc-actions" }, addBtn)
     );
 
@@ -123,19 +153,23 @@
   /* ---------- Quick-view detail ---------- */
   function buildQuickView() {
     if (document.getElementById("quickView")) return;
-    const d = A.el("aside", { id: "quickView", class: "drawer", role: "dialog", "aria-modal": "true" });
+    const d = A.el("aside", { id: "quickView", class: "drawer product-modal", role: "dialog", "aria-modal": "true" });
     d.innerHTML =
       '<div class="drawer-head"><h3>' + A.icon("info") + '<span data-i18n="details">' + A.escapeHtml(A.t("details")) + '</span></h3>' +
       '<button class="close-x" data-action="close-drawer">' + A.icon("close") + '</button></div>' +
       '<div class="drawer-body" id="qvBody"></div>';
     document.body.append(d);
+    const close = d.querySelector("[data-action='close-drawer']");
+    if (close) close.addEventListener("click", A.closeAllDrawers);
   }
 
-  function openQuickView(p) {
+  function openQuickView(p, opts) {
+    opts = opts || {};
+    if (p.customMix) { openCustomMix(p, opts); return; }
     buildQuickView();
     const body = document.getElementById("qvBody");
     const isKg = p.unit === "kg";
-    const defaultW = isKg ? 500 : 1000;
+    const defaultW = opts.weight || (isKg ? (p.cat === "spices" ? 100 : 500) : 1000);
     body.textContent = "";
 
     const media = A.el("div", { class: "qv-media" }, A.el("img", { src: p.img, alt: A.nameOf(p.name) }));
@@ -148,31 +182,30 @@
     function paint(w) {
       priceEl.innerHTML = '<span class="cur">₪</span>' + A.escapeHtml(A.fmtNum(A.unitPrice(p, w)));
       if (p.offer) { oldEl.textContent = A.money(A.oldUnitPrice(p, w)); oldEl.classList.remove("hidden"); }
-      unitEl.textContent = isKg ? "/ " + A.t("per_kg").replace(/^\//, "") : A.t("per_piece");
+      unitEl.textContent = priceUnitText(p, isKg, w);
     }
     paint(defaultW);
 
-    let weightSel, controls;
+    let weightPick, controls;
     if (isKg) {
-      weightSel = A.el("select", { "aria-label": A.t("select_weight") });
-      DATA.WEIGHTS.forEach(g => {
-        const o = A.el("option", { value: g, text: g >= 1000 ? "1 " + kgWord() : g + " " + gWord() });
-        if (g === defaultW) o.selected = true;
-        weightSel.append(o);
-      });
-      weightSel.addEventListener("change", () => paint(+weightSel.value));
-      controls = A.el("div", { class: "weight-select", style: "max-width:220px" },
-        A.el("span", { class: "wlabel", text: A.t("weight") }), weightSel);
+      weightPick = weightButtons(defaultW, paint);
+      controls = A.el("div", { class: "weight-select weight-button-wrap" },
+        A.el("span", { class: "wlabel", text: A.t("weight") }), weightPick.wrap);
     }
 
     const fav = A.el("button", { class: "btn btn-outline" + (isFav(p.id) ? " active-fav" : ""), html: A.icon("heart") + "<span>" + A.escapeHtml(A.t("favorites")) + "</span>", style: "color:var(--brown-700);border-color:var(--line)" });
     fav.addEventListener("click", () => { const now = toggleFav(p.id); fav.classList.toggle("active-fav", now); });
 
-    const add = A.el("button", { class: "btn btn-gold", style: "flex:1", html: A.icon("cart") + "<span>" + A.escapeHtml(A.t("add_to_cart")) + "</span>" });
+    const notes = A.el("textarea", { class: "product-notes", maxlength: "180", placeholder: A.t("product_notes_ph"), "aria-label": A.t("product_notes") });
+    if (opts.notes) notes.value = opts.notes;
+
+    const add = A.el("button", { class: "btn btn-gold", style: "flex:1", html: A.icon("cart") + "<span>" + A.escapeHtml(opts.replaceKey ? A.t("save_changes") : A.t("add_to_cart")) + "</span>" });
     add.addEventListener("click", () => {
-      window.AdamCart.add(p.id, isKg ? +weightSel.value : 1000, 1);
+      const note = A.sanitizeInput(notes.value, { maxLen: 180, multiline: true });
+      if (opts.replaceKey) window.AdamCart.remove(opts.replaceKey);
+      window.AdamCart.add(p.id, isKg ? weightPick.value : 1000, 1, note);
       add.innerHTML = A.icon("check") + "<span>" + A.escapeHtml(A.t("added")) + "</span>";
-      setTimeout(() => { add.innerHTML = A.icon("cart") + "<span>" + A.escapeHtml(A.t("add_to_cart")) + "</span>"; }, 1300);
+      setTimeout(() => { A.closeAllDrawers(); add.innerHTML = A.icon("cart") + "<span>" + A.escapeHtml(A.t("add_to_cart")) + "</span>"; }, 650);
     });
 
     const cat = catById(p.cat);
@@ -183,9 +216,159 @@
       p.desc ? A.el("p", { class: "qv-desc", text: A.nameOf(p.desc) }) : null,
       A.el("div", { class: "pc-price-row", style: "margin:6px 0 4px" }, priceEl, oldEl, unitEl),
       isKg ? controls : A.el("div", { class: "pc-unit", text: A.t("per_piece") }),
-      A.el("div", { style: "display:flex;gap:10px;margin-top:18px" }, fav, add)
+      A.el("div", { class: "field product-note-field" },
+        A.el("label", { text: A.t("product_notes") }),
+        notes
+      ),
+      A.el("div", { class: "qv-actions" }, fav, add)
     );
 
+    A.openDrawer("quickView");
+  }
+
+  function openCustomMix(p, opts) {
+    buildQuickView();
+    const body = document.getElementById("qvBody");
+    body.textContent = "";
+    const choices = sortProducts(DATA.PRODUCTS.filter(x => x.cat === "nuts" && x.unit === "kg" && !x.customMix && x.id !== "adam-mix"));
+    const selected = new Map();
+    let activeId = null;
+    const priceEl = A.el("span", { class: "pc-price", style: "font-size:24px" });
+    function calc() {
+      let total = 0;
+      selected.forEach((weight, id) => {
+        const item = DATA.PRODUCTS.find(x => x.id === id);
+        if (item) total += A.unitPrice(item, weight);
+      });
+      if (total > 0) {
+        priceEl.innerHTML = '<span class="cur">₪</span>' + A.escapeHtml(A.fmtNum(total));
+      } else {
+        priceEl.textContent = A.t("price_on_selection");
+      }
+      add.disabled = total <= 0;
+      return total;
+    }
+    const list = A.el("div", { class: "mix-builder" });
+
+    function syncCards() {
+      list.querySelectorAll(".mix-card").forEach(card => {
+        const id = card.dataset.productId;
+        card.classList.toggle("active", selected.has(id));
+        card.setAttribute("aria-pressed", String(selected.has(id)));
+      });
+    }
+
+    function closeWeightDialog() {
+      document.querySelector("#quickView .mix-weight-layer")?.remove();
+      activeId = null;
+    }
+
+    function openWeightDialog(item) {
+      closeWeightDialog();
+      activeId = item.id;
+      const layer = A.el("div", { class: "mix-weight-layer" });
+      const dialog = A.el("div", {
+        class: "mix-weight-dialog",
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-label": A.lang() === "he" ? "בחירת משקל" : "اختيار الوزن"
+      });
+      let pendingWeight = selected.get(item.id) || 100;
+      const picker = weightButtons(pendingWeight, weight => { pendingWeight = weight; });
+      const close = A.el("button", {
+        type: "button",
+        class: "mix-dialog-close",
+        "aria-label": A.lang() === "he" ? "סגירה" : "إغلاق",
+        html: A.icon("close")
+      });
+      close.addEventListener("click", closeWeightDialog);
+      const confirm = A.el("button", {
+        type: "button",
+        class: "btn btn-gold mix-confirm",
+        html: A.icon("check") + "<span>" + A.escapeHtml(A.lang() === "he" ? "אישור המשקל" : "تأكيد الوزن") + "</span>"
+      });
+      confirm.addEventListener("click", () => {
+        selected.set(item.id, pendingWeight);
+        syncCards();
+        calc();
+        closeWeightDialog();
+      });
+      const actions = A.el("div", { class: "mix-dialog-actions" }, confirm);
+      if (selected.has(item.id)) {
+        const remove = A.el("button", {
+          type: "button",
+          class: "btn btn-outline mix-remove",
+          html: A.icon("trash") + "<span>" + A.escapeHtml(A.lang() === "he" ? "הסרה מהתערובת" : "حذف من المخلوطة") + "</span>"
+        });
+        remove.addEventListener("click", () => {
+          selected.delete(item.id);
+          syncCards();
+          calc();
+          closeWeightDialog();
+        });
+        actions.prepend(remove);
+      }
+      dialog.append(
+        close,
+        A.el("img", { class: "mix-dialog-image", src: item.img, alt: A.nameOf(item.name) }),
+        A.el("h3", { text: A.nameOf(item.name) }),
+        A.el("p", { text: A.lang() === "he" ? "בחרו את המשקל הרצוי" : "اختر الوزن المطلوب" }),
+        picker.wrap,
+        actions
+      );
+      layer.append(dialog);
+      layer.addEventListener("click", event => {
+        if (event.target === layer) closeWeightDialog();
+      });
+      document.getElementById("quickView").append(layer);
+      requestAnimationFrame(() => layer.classList.add("show"));
+      close.focus();
+    }
+
+    choices.forEach(item => {
+      const card = A.el("button", {
+        type: "button",
+        class: "mix-card",
+        "aria-pressed": "false",
+        dataset: { productId: item.id }
+      },
+        A.el("span", { class: "mix-card-check", html: A.icon("check") }),
+        A.el("img", { src: item.img, alt: "" }),
+        A.el("strong", { text: A.nameOf(item.name) }),
+        A.el("small", { text: A.money(A.unitPrice(item, 100)) + " / " + weightText(100) })
+      );
+      card.addEventListener("click", () => {
+        openWeightDialog(item);
+      });
+      list.append(card);
+    });
+    const notes = A.el("textarea", { class: "product-notes", maxlength: "180", placeholder: A.t("product_notes_ph"), "aria-label": A.t("product_notes") });
+    const add = A.el("button", { class: "btn btn-gold btn-block", disabled: "disabled", html: A.icon("cart") + "<span>" + A.escapeHtml(A.t("add_to_cart")) + "</span>" });
+    add.addEventListener("click", () => {
+      const components = [];
+      selected.forEach((weight, id) => {
+        const item = DATA.PRODUCTS.find(x => x.id === id);
+        if (item) components.push({ id, weight, name: A.nameOf(item.name), price: A.unitPrice(item, weight) });
+      });
+      if (!components.length) return;
+      const total = calc();
+      const componentNotes = components.map(c => c.name + " " + weightText(c.weight)).join("، ");
+      const note = [componentNotes, A.sanitizeInput(notes.value, { maxLen: 180, multiline: true })].filter(Boolean).join("\n");
+      if (opts.replaceKey) window.AdamCart.remove(opts.replaceKey);
+      window.AdamCart.add(p.id, 1000, 1, note, { customPrice: total, components });
+      setTimeout(() => A.closeAllDrawers(), 500);
+    });
+    body.append(
+      A.el("div", { class: "qv-media" }, A.el("img", { src: p.img, alt: A.nameOf(p.name) })),
+      A.el("h2", { class: "qv-name", text: A.nameOf(p.name) }),
+      A.el("p", { class: "qv-desc", text: A.nameOf(p.desc) }),
+      A.el("div", { class: "mix-total" }, A.el("span", { text: A.t("mix_total") }), priceEl),
+      A.el("h3", { class: "mix-title", text: A.t("choose_mix_items") }),
+      list,
+      A.el("div", { class: "field product-note-field" }, A.el("label", { text: A.t("product_notes") }), notes),
+      add
+    );
+    calc();
     A.openDrawer("quickView");
   }
 
@@ -242,7 +425,7 @@
 
   function filtered() {
     const q = state.q.trim().toLowerCase();
-    return DATA.PRODUCTS.filter(p => {
+    return sortProducts(DATA.PRODUCTS.filter(p => {
       if (state.cat !== "all" && p.cat !== state.cat) return false;
       if (state.sub !== "all" && p.sub !== state.sub) return false;
       if (q) {
@@ -250,7 +433,7 @@
         if (!hay.includes(q)) return false;
       }
       return true;
-    });
+    }));
   }
 
   function renderCatalog() {
@@ -314,6 +497,11 @@
 
   /* ---------- Favourites drawer ---------- */
   function openFavorites() {
+    const drawer = document.getElementById("favDrawer");
+    if (drawer && drawer.classList.contains("show")) {
+      A.closeAllDrawers();
+      return;
+    }
     const body = document.getElementById("favBody");
     if (!body) return;
     body.textContent = "";
@@ -329,15 +517,13 @@
       list.forEach(p => grid.append(card(p)));
       body.append(grid);
     }
-    A.openDrawer("favDrawer");
+    A.toggleDrawer("favDrawer");
   }
 
   /* ---------- Public ---------- */
   function renderAll() {
     renderCategories();
     renderSubcats();
-    renderRail("bestsellers", DATA.PRODUCTS.filter(p => p.bestseller));
-    renderRail("offers-grid", DATA.PRODUCTS.filter(p => p.offer));
     renderCatalog();
     updateFavCount();
   }

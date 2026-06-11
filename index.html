@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#271913" />
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; form-action 'self' https://wa.me;" />
+    content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; connect-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; form-action 'self' https://wa.me;" />
 
   <title>محمص آدم · Adam Roastery — مكسرات وتمور فاخرة</title>
   <meta name="description" content="محمص آدم — أجود أنواع التمور والمكسرات والبهارات والقهوة الفاخرة. اطلب الآن عبر واتساب مع توصيل سريع. פיצוחי אדם — פיצוחים, תמרים, תבלינים וקפה משובחים." />
@@ -25,9 +25,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=Tajawal:wght@400;500;700&family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@400;500;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/animations.css" />
-  <link rel="stylesheet" href="css/responsive.css" />
+  <link rel="stylesheet" href="css/style.css?v=hero-profile" />
+  <link rel="stylesheet" href="css/animations.css?v=fab-icons" />
+  <link rel="stylesheet" href="css/responsive.css?v=a11y-panel" />
 </head>
 <body data-page="home">
   <div class="app-shell" id="app">
@@ -38,8 +38,8 @@
       <h1 class="hero-title"><span class="store-name"></span> <span class="dot">.</span></h1>
       <p class="hero-sub store-tag"></p>
       <div class="hero-actions">
-        <a href="menu.html" class="btn btn-gold" data-i18n="hero_cta"></a>
-        <button class="btn btn-outline" data-action="scroll-cats" id="browseBtn" data-i18n="browse_menu"></button>
+        <a href="https://www.instagram.com/mahmas_adam2?igsh=MXU4MGF2dmk1YW0ydA==" target="_blank" rel="noopener noreferrer" class="btn btn-gold" data-i18n="hero_cta"></a>
+        <a href="tel:0523305309" class="btn btn-outline" data-i18n="browse_menu"></a>
       </div>
     </section>
 
@@ -56,16 +56,7 @@
     <div class="flourish">✦</div>
     <div class="cats" id="cats" role="list" aria-label="categories"></div>
 
-    <!-- Best sellers -->
-    <section class="section reveal">
-      <div class="section-head">
-        <h2 class="section-title"><span class="crown" id="crownSlot"></span><span data-i18n="bestsellers"></span></h2>
-        <a class="link-all" href="menu.html"><span data-i18n="view_all"></span></a>
-      </div>
-      <div class="product-rail" id="bestsellers"></div>
-    </section>
-
-    <!-- Weekly offer + offers grid -->
+    <!-- Occasions banner -->
     <section class="section" id="offers">
       <div class="offer-banner reveal">
         <div class="offer-ico" id="offerIcoSlot"></div>
@@ -73,19 +64,14 @@
           <div class="offer-title" data-i18n="weekly_offer"></div>
           <div class="offer-desc" data-i18n="weekly_offer_text"></div>
         </div>
-        <a href="menu.html" class="btn btn-gold" data-i18n="shop_now"></a>
+        <a href="tel:0523305309" class="btn btn-gold" data-i18n="contact_us"></a>
       </div>
-      <div class="section-head">
-        <h2 class="section-title"><span data-i18n="offers"></span></h2>
-      </div>
-      <div class="product-grid" id="offers-grid"></div>
     </section>
 
-    <!-- Catalog -->
+    <!-- Full catalog -->
     <section class="section" id="catalog-section">
       <div class="section-head">
         <h2 class="section-title" id="catalog-title"></h2>
-        <a class="link-all" href="menu.html"><span data-i18n="view_all"></span></a>
       </div>
       <div class="subcats" id="subcats" role="list" aria-label="subcategories"></div>
       <div class="product-grid" id="catalog"></div>
@@ -93,13 +79,13 @@
 
   </div>
 
-  <script src="js/data.js"></script>
-  <script src="js/translations.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/accessibility.js"></script>
-  <script src="js/products.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/checkout.js"></script>
+  <script src="js/data.js?v=mix-cards"></script>
+  <script src="js/translations.js?v=favorites-sheet"></script>
+  <script src="js/main.js?v=fab-icons"></script>
+  <script src="js/accessibility.js?v=a11y-panel"></script>
+  <script src="js/products.js?v=mix-nuts-order"></script>
+  <script src="js/cart.js?v=cart-center"></script>
+  <script src="js/checkout.js?v=home-menu"></script>
   <script src="js/animations.js"></script>
 </body>
 </html>

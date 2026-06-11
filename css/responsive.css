@@ -68,9 +68,6 @@ html.a11y-contrast .pc-name,
 html.a11y-contrast .section-title { color: #120a04; }
 html.a11y-contrast .btn-gold { background: #6e4e0c; color: #fff; }
 
-/* ---------- Accessibility: Grayscale ---------- */
-html.a11y-grayscale { filter: grayscale(1); }
-
 /* When fonts are scaled very large, let cards stack to keep readable */
 html.a11y-bigfont .product-grid { grid-template-columns: 1fr; }
 html.a11y-bigfont .pc-name { min-height: auto; }

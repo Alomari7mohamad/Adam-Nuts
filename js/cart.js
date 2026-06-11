@@ -1,6 +1,6 @@
 /* =====================================================================
    cart.js — cart state (localStorage), floating summary, cart drawer
-   Cart item shape: { id, weight, qty }. Key = id + "|" + weight.
+   Cart item shape: { id, weight, qty, notes }. Key = id + "|" + weight + notes.
    ===================================================================== */
 (function () {
   "use strict";
@@ -19,16 +19,30 @@
         .filter(it => it && typeof it.id === "string" && A.productById(it.id)
           && Number.isFinite(+it.weight) && +it.weight > 0
           && Number.isInteger(+it.qty) && +it.qty > 0)
-        .map(it => ({ id: it.id, weight: +it.weight, qty: Math.min(+it.qty, 999) }));
+        .map(it => ({ id: it.id, weight: +it.weight, qty: Math.min(+it.qty, 999), notes: A.sanitizeInput(it.notes || "", { maxLen: 180, multiline: true }), customPrice: it.customPrice != null && Number.isFinite(+it.customPrice) ? +it.customPrice : null, components: Array.isArray(it.components) ? it.components : [] }));
     } catch { return []; }
   }
   function save() { localStorage.setItem(KEY, JSON.stringify(items)); }
-  function keyOf(it) { return it.id + "|" + it.weight; }
+  function keyOf(it) { return it.id + "|" + it.weight + "|" + (it.notes || ""); }
+  function weightText(g) { return g >= 1000 ? (A.lang() === "he" ? '1 ק"ג' : "1 كيلو") : g + " " + (A.lang() === "he" ? "גרם" : "غرام"); }
+  function weightButtons(current, onChange) {
+    const wrap = A.el("div", { class: "weight-buttons cart-weight-buttons", role: "group", "aria-label": A.t("weight") });
+    A.DATA.WEIGHTS.forEach(g => {
+      const b = A.el("button", { type: "button", class: "weight-chip" + (g === current ? " active" : ""), text: weightText(g), dataset: { weight: String(g) } });
+      b.addEventListener("click", () => onChange(g));
+      wrap.append(b);
+    });
+    return wrap;
+  }
 
   /* ---------- Mutations ---------- */
-  function add(id, weight, qty) {
-    const found = items.find(it => it.id === id && it.weight === weight);
-    if (found) found.qty += qty; else items.push({ id, weight, qty });
+  function add(id, weight, qty, notes, meta) {
+    meta = meta || {};
+    notes = A.sanitizeInput(notes || "", { maxLen: 180, multiline: true });
+    const customPrice = meta.customPrice != null && Number.isFinite(+meta.customPrice) ? +meta.customPrice : null;
+    const components = Array.isArray(meta.components) ? meta.components : [];
+    const found = items.find(it => it.id === id && it.weight === weight && (it.notes || "") === notes && (it.customPrice || null) === customPrice);
+    if (found) found.qty += qty; else items.push({ id, weight, qty, notes, customPrice, components });
     save(); render(); bump();
     A.toast(A.t("added"), "check");
   }
@@ -42,7 +56,7 @@
     const it = items.find(x => keyOf(x) === key);
     if (!it) return;
     // merge if an identical product+weight already exists
-    const twin = items.find(x => x.id === it.id && x.weight === weight && x !== it);
+    const twin = items.find(x => x.id === it.id && x.weight === weight && (x.notes || "") === (it.notes || "") && (x.customPrice || null) === (it.customPrice || null) && x !== it);
     if (twin) { twin.qty += it.qty; items = items.filter(x => x !== it); }
     else it.weight = weight;
     save(); render();
@@ -55,18 +69,19 @@
   function subtotal() {
     return items.reduce((s, it) => {
       const p = A.productById(it.id); if (!p) return s;
-      return s + A.unitPrice(p, it.weight) * it.qty;
+      return s + (it.customPrice != null ? it.customPrice : A.unitPrice(p, it.weight)) * it.qty;
     }, 0);
   }
   function getItems() {
     return items.map(it => {
       const p = A.productById(it.id);
-      return { product: p, weight: it.weight, qty: it.qty, line: A.unitPrice(p, it.weight) * it.qty };
+      return { product: p, weight: it.weight, qty: it.qty, notes: it.notes || "", customPrice: it.customPrice, components: it.components || [], line: (it.customPrice != null ? it.customPrice : A.unitPrice(p, it.weight)) * it.qty };
     }).filter(x => x.product);
   }
 
   /* ---------- Rendering ---------- */
   function weightLabel(it, p) {
+    if (p.fixedWeight) return A.nameOf(p.fixedWeight);
     if (p.unit !== "kg") return A.t("per_piece");
     return it.weight >= 1000 ? (A.lang() === "he" ? '1 ק"ג' : "1 كيلو")
                              : it.weight + " " + (A.lang() === "he" ? "גרם" : "غرام");
@@ -89,8 +104,8 @@
     }
     if (foot) foot.classList.remove("hidden");
 
-    getItems().forEach(({ product: p, weight, qty, line }) => {
-      const it = { id: p.id, weight };
+    getItems().forEach(({ product: p, weight, qty, notes, line }) => {
+      const it = { id: p.id, weight, notes };
       const key = keyOf(it);
 
       const removeBtn = A.el("button", { class: "ci-remove tap", "aria-label": A.t("remove"), html: A.icon("trash") });
@@ -104,36 +119,23 @@
       plus.addEventListener("click", () => setQty(key, qty + 1));
       const qtyBox = A.el("div", { class: "qty" }, minus, qSpan, plus);
 
-      // weight editor (kg only)
-      let bottomLeft;
-      if (p.unit === "kg") {
-        const sel = A.el("select", { "aria-label": A.t("weight") });
-        A.DATA.WEIGHTS.forEach(g => {
-          const o = A.el("option", { value: g, text: g >= 1000 ? (A.lang() === "he" ? '1 ק"ג' : "1 كيلو") : g + (A.lang() === "he" ? " גרם" : " غ") });
-          if (g === weight) o.selected = true;
-          sel.append(o);
-        });
-        sel.addEventListener("change", () => setWeight(key, +sel.value));
-        bottomLeft = A.el("div", { class: "ci-weight" }, sel);
-      } else {
-        bottomLeft = A.el("span", { class: "ci-variant", text: weightLabel(it, p) });
-      }
+      const editBtn = A.el("button", { class: "ci-edit tap", html: A.icon("info") + "<span>" + A.escapeHtml(A.t("edit_item")) + "</span>" });
+      editBtn.addEventListener("click", () => {
+        A.closeAllDrawers();
+        if (window.AdamProducts) window.AdamProducts.openQuickView(p, { weight, notes, replaceKey: key });
+      });
 
-      const row = A.el("div", { class: "cart-item" },
+      const row = A.el("div", { class: "cart-item cart-sheet-item" },
         A.el("img", { class: "ci-img", src: p.img, alt: A.nameOf(p.name), loading: "lazy" }),
         A.el("div", { class: "ci-main" },
-          A.el("div", { class: "ci-top" },
-            A.el("div", {},
-              A.el("div", { class: "ci-name", text: A.nameOf(p.name) }),
-              p.unit === "kg" ? A.el("div", { class: "ci-variant", text: weightLabel(it, p) }) : null
-            ),
-            removeBtn
-          ),
-          A.el("div", { class: "ci-bottom" },
-            qtyBox,
-            A.el("span", { class: "ci-price", text: A.money(line) })
-          ),
-          bottomLeft
+          A.el("div", { class: "ci-name", text: A.nameOf(p.name) }),
+          A.el("div", { class: "ci-variant", text: weightLabel(it, p) }),
+          A.el("span", { class: "ci-price", text: A.money(line) }),
+          notes ? A.el("div", { class: "ci-notes", text: notes }) : null
+        ),
+        A.el("div", { class: "ci-side" },
+          qtyBox,
+          A.el("div", { class: "ci-tools" }, editBtn, removeBtn)
         )
       );
       body.append(row);
@@ -145,17 +147,15 @@
       const totals = A.el("div", { class: "totals" },
         A.el("div", { class: "row" }, A.el("span", { text: A.t("subtotal") }), A.el("span", { text: A.money(subtotal()) }))
       );
-      const clearBtn = A.el("button", { class: "btn btn-outline", style: "flex:0 0 auto", html: A.icon("trash") });
-      clearBtn.append(document.createTextNode(" " + A.t("clear_cart")));
-      clearBtn.style.color = "var(--danger)";
-      clearBtn.style.borderColor = "var(--danger)";
+      const clearBtn = A.el("button", { class: "cart-clear-icon", "aria-label": A.t("clear_cart"), html: A.icon("trash") });
       clearBtn.addEventListener("click", clear);
 
-      const checkoutBtn = A.el("button", { class: "btn btn-gold", style: "flex:1", html: A.icon("check") });
+      const checkoutBtn = A.el("button", { class: "btn btn-gold btn-block cart-checkout", html: A.icon("check") });
       checkoutBtn.append(document.createTextNode(" " + A.t("checkout")));
       checkoutBtn.addEventListener("click", () => { A.closeAllDrawers(); window.AdamCheckout.open(); });
 
-      foot.append(totals, A.el("div", { style: "display:flex; gap:10px" }, clearBtn, checkoutBtn));
+      totals.append(clearBtn);
+      foot.append(totals, checkoutBtn);
     }
   }
 
@@ -183,7 +183,15 @@
   function render() { renderFloating(); updateBadges(); renderDrawer(); }
   function bump() { const fc = document.getElementById("floatingCart"); if (fc) { fc.classList.remove("bump"); void fc.offsetWidth; fc.classList.add("bump"); } }
 
-  function open() { renderDrawer(); A.openDrawer("cartDrawer"); }
+  function open() {
+    const drawer = document.getElementById("cartDrawer");
+    if (drawer && drawer.classList.contains("show")) {
+      A.closeAllDrawers();
+      return;
+    }
+    renderDrawer();
+    A.toggleDrawer("cartDrawer");
+  }
 
   function init() {
     render();
