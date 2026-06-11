@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#271913" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; form-action 'self' https://wa.me;" />
+
+  <title>القائمة · محمص آدم — كل المنتجات</title>
+  <meta name="description" content="تصفّح كل منتجات محمص آدم: مكسرات، تمور، بهارات، قهوة، حلويات والمزيد." />
+  <meta name="robots" content="index, follow" />
+
+  <link rel="icon" type="image/jpeg" href="assets/images/logo/logo.svg.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=Tajawal:wght@400;500;700&family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@400;500;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body data-page="menu">
+  <div class="app-shell" id="app">
+
+    <section class="section" style="padding-top:18px">
+      <h1 class="section-title" style="font-size:24px"><span data-i18n="menu"></span></h1>
+      <p class="store-tag" style="color:var(--muted);font-size:14px;margin-top:4px"></p>
+    </section>
+
+    <!-- Search -->
+    <div class="search-wrap" style="padding-top:6px">
+      <div class="search-bar">
+        <span class="search-ico" aria-hidden="true"></span>
+        <input id="search" type="text" inputmode="search" data-i18n-ph="search_placeholder" aria-label="search" maxlength="60" />
+        <button class="search-clear" aria-label="clear">✕</button>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="cats" id="cats" role="list" aria-label="categories"></div>
+
+    <!-- Catalog -->
+    <section class="section" id="catalog-section">
+      <div class="section-head">
+        <h2 class="section-title" id="catalog-title"></h2>
+      </div>
+      <div class="subcats" id="subcats" role="list" aria-label="subcategories"></div>
+      <div class="product-grid" id="catalog"></div>
+    </section>
+
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/translations.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/accessibility.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/checkout.js"></script>
+  <script src="js/animations.js"></script>
+</body>
+</html>
