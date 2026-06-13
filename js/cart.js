@@ -19,7 +19,7 @@
         .filter(it => it && typeof it.id === "string" && A.productById(it.id)
           && Number.isFinite(+it.weight) && +it.weight > 0
           && Number.isInteger(+it.qty) && +it.qty > 0)
-        .map(it => ({ id: it.id, weight: +it.weight, qty: Math.min(+it.qty, 999), notes: A.sanitizeInput(it.notes || "", { maxLen: 180, multiline: true }), customPrice: it.customPrice != null && Number.isFinite(+it.customPrice) ? +it.customPrice : null, components: Array.isArray(it.components) ? it.components : [] }));
+        .map(it => ({ id: it.id, weight: +it.weight, qty: Math.min(+it.qty, 999), notes: A.sanitizeInput(it.notes || "", { maxLen: 180, multiline: true }), userNotes: A.sanitizeInput(it.userNotes || "", { maxLen: 180, multiline: true }), customPrice: it.customPrice != null && Number.isFinite(+it.customPrice) ? +it.customPrice : null, components: Array.isArray(it.components) ? it.components : [] }));
     } catch { return []; }
   }
   function save() { localStorage.setItem(KEY, JSON.stringify(items)); }
@@ -41,8 +41,9 @@
     notes = A.sanitizeInput(notes || "", { maxLen: 180, multiline: true });
     const customPrice = meta.customPrice != null && Number.isFinite(+meta.customPrice) ? +meta.customPrice : null;
     const components = Array.isArray(meta.components) ? meta.components : [];
+    const userNotes = A.sanitizeInput(meta.userNotes || "", { maxLen: 180, multiline: true });
     const found = items.find(it => it.id === id && it.weight === weight && (it.notes || "") === notes && (it.customPrice || null) === customPrice);
-    if (found) found.qty += qty; else items.push({ id, weight, qty, notes, customPrice, components });
+    if (found) found.qty += qty; else items.push({ id, weight, qty, notes, userNotes, customPrice, components });
     save(); render(); bump();
     A.toast(A.t("added"), "check");
   }
@@ -66,16 +67,44 @@
 
   /* ---------- Derived ---------- */
   function count() { return items.reduce((s, it) => s + it.qty, 0); }
-  function subtotal() {
-    return items.reduce((s, it) => {
-      const p = A.productById(it.id); if (!p) return s;
-      return s + (it.customPrice != null ? it.customPrice : A.unitPrice(p, it.weight)) * it.qty;
+  function baseLine(it, p) {
+    return (it.customPrice != null ? it.customPrice : A.unitPrice(p, it.weight)) * it.qty;
+  }
+  function promoFor(p) {
+    return (A.DATA.PROMOS || []).find(promo => promo.ids.includes(p.id));
+  }
+  function promoQty(promo) {
+    return items.reduce((n, it) => {
+      const p = A.productById(it.id);
+      return n + (p && promo.ids.includes(p.id) && it.customPrice == null ? it.qty : 0);
     }, 0);
   }
+  function promoDiscount() {
+    return (A.DATA.PROMOS || []).reduce((sum, promo) => {
+      const qty = promoQty(promo);
+      const bundles = Math.floor(qty / promo.qty);
+      const save = Math.max(0, promo.qty * promo.unitPrice - promo.bundlePrice);
+      return sum + bundles * save;
+    }, 0);
+  }
+  function promoHint(promo, qty) {
+    if (qty >= promo.qty) return A.t("promo_6_applied").replace("{qty}", promo.qty).replace("{price}", A.money(promo.bundlePrice));
+    return A.t("promo_6_hint")
+      .replace("{qty}", promo.qty)
+      .replace("{price}", A.money(promo.bundlePrice))
+      .replace("{save}", A.money(Math.max(0, promo.qty * promo.unitPrice - promo.bundlePrice)));
+  }
+  function subtotalBeforeDiscount() {
+    return items.reduce((s, it) => {
+      const p = A.productById(it.id); if (!p) return s;
+      return s + baseLine(it, p);
+    }, 0);
+  }
+  function subtotal() { return Math.max(0, subtotalBeforeDiscount() - promoDiscount()); }
   function getItems() {
     return items.map(it => {
       const p = A.productById(it.id);
-      return { product: p, weight: it.weight, qty: it.qty, notes: it.notes || "", customPrice: it.customPrice, components: it.components || [], line: (it.customPrice != null ? it.customPrice : A.unitPrice(p, it.weight)) * it.qty };
+      return { product: p, weight: it.weight, qty: it.qty, notes: it.notes || "", userNotes: it.userNotes || "", customPrice: it.customPrice, components: it.components || [], line: baseLine(it, p) };
     }).filter(x => x.product);
   }
 
@@ -85,6 +114,10 @@
     if (p.unit !== "kg") return A.t("per_piece");
     return it.weight >= 1000 ? (A.lang() === "he" ? '1 ק"ג' : "1 كيلو")
                              : it.weight + " " + (A.lang() === "he" ? "גרם" : "غرام");
+  }
+  function cartName(p) {
+    if (p.customMix) return A.lang() === "he" ? "תערובת אישית" : "مخلوطة خاصة";
+    return A.nameOf(p.name);
   }
 
   function renderDrawer() {
@@ -104,9 +137,10 @@
     }
     if (foot) foot.classList.remove("hidden");
 
-    getItems().forEach(({ product: p, weight, qty, notes, line }) => {
+    getItems().forEach(({ product: p, weight, qty, notes, userNotes, customPrice, components, line }) => {
       const it = { id: p.id, weight, notes };
       const key = keyOf(it);
+      const promo = promoFor(p);
 
       const removeBtn = A.el("button", { class: "ci-remove tap", "aria-label": A.t("remove"), html: A.icon("trash") });
       removeBtn.addEventListener("click", () => remove(key));
@@ -122,15 +156,16 @@
       const editBtn = A.el("button", { class: "ci-edit tap", html: A.icon("info") + "<span>" + A.escapeHtml(A.t("edit_item")) + "</span>" });
       editBtn.addEventListener("click", () => {
         A.closeAllDrawers();
-        if (window.AdamProducts) window.AdamProducts.openQuickView(p, { weight, notes, replaceKey: key });
+        if (window.AdamProducts) window.AdamProducts.openQuickView(p, { weight, notes, userNotes, customPrice, components, replaceKey: key });
       });
 
       const row = A.el("div", { class: "cart-item cart-sheet-item" },
         A.el("img", { class: "ci-img", src: p.img, alt: A.nameOf(p.name), loading: "lazy" }),
         A.el("div", { class: "ci-main" },
-          A.el("div", { class: "ci-name", text: A.nameOf(p.name) }),
+          A.el("div", { class: "ci-name", text: cartName(p) }),
           A.el("div", { class: "ci-variant", text: weightLabel(it, p) }),
           A.el("span", { class: "ci-price", text: A.money(line) }),
+          promo ? A.el("div", { class: "ci-promo", text: promoHint(promo, promoQty(promo)) }) : null,
           notes ? A.el("div", { class: "ci-notes", text: notes }) : null
         ),
         A.el("div", { class: "ci-side" },
@@ -144,7 +179,9 @@
     // totals
     if (foot) {
       foot.textContent = "";
+      const discount = promoDiscount();
       const totals = A.el("div", { class: "totals" },
+        discount ? A.el("div", { class: "row" }, A.el("span", { text: A.t("promo_discount") }), A.el("span", { text: "-" + A.money(discount) })) : null,
         A.el("div", { class: "row" }, A.el("span", { text: A.t("subtotal") }), A.el("span", { text: A.money(subtotal()) }))
       );
       const clearBtn = A.el("button", { class: "cart-clear-icon", "aria-label": A.t("clear_cart"), html: A.icon("trash") });
@@ -199,5 +236,5 @@
       b.addEventListener("click", e => { e.preventDefault(); open(); }));
   }
 
-  window.AdamCart = { init, add, remove, clear, setQty, setWeight, render, open, count, subtotal, getItems };
+  window.AdamCart = { init, add, remove, clear, setQty, setWeight, render, open, count, subtotal, promoDiscount, getItems };
 })();

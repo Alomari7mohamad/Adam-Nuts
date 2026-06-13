@@ -306,7 +306,7 @@
     buildPanel();
     apply();
     document.getElementById("a11yToggle")?.addEventListener("click", () => A.toggleDrawer("a11yPanel"));
-    document.addEventListener("adam:lang", updateLanguage);
+    window.addEventListener("adam:lang", updateLanguage);
   }
 
   window.AdamAccessibility = { init, apply };

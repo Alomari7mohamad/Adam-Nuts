@@ -21,7 +21,7 @@
     },
     whatsapp: "972523305309",            // wa.me number (no +)
     whatsappDisplay: "052-330-5309",
-    location: "https://www.waze.com/ul?q=%D9%85%D8%AD%D9%85%D8%B5%20%D8%A2%D8%AF%D9%85&navigate=yes",
+    location: "https://waze.com/ul/hsvc0gnwns",
     instagram: "https://www.instagram.com/mahmas_adam2?igsh=MXU4MGF2dmk1YW0ydA==",
     // 👉 The public URL the menu QR code points to. After deploying, set this to
     //    your live URL, then regenerate assets/images/qr-menu.svg with any free
@@ -54,6 +54,7 @@
     { id: "dried",        name: { ar: "مجففات",         he: "פירות יבשים" },     img: "assets/images/dried/dried-2.jpeg",
       subs: [SUB.dates, SUB.soft, SUB.stuffed] },
     { id: "espresso",     name: { ar: "إسبريسو",       he: "אספרסו" },          img: "assets/images/espresso/espresso-9.jpeg" },
+    { id: "specials",     name: { ar: "العروض",        he: "מבצעים" },          img: "assets/images/specials/تنزيلات-מבצעים.jpg" },
     { id: "spices",       name: { ar: "بهارات",        he: "תבלינים" },         img: "assets/images/spices/spices-1.png",
       subs: [SUB.ground, SUB.whole, SUB.blends] },
     { id: "sweets",       name: { ar: "حلويات",        he: "מתוקים" },          img: "assets/images/sweets/sweets-2.jpeg" },
@@ -115,10 +116,10 @@
       desc: { ar: "مكاديميا بقشرها الطبيعي، طازجة وغنية بالنكهة.", he: "מקדמיה עם קליפתה הטבעית, טרייה ועשירה בטעם." } },
 
 
-    { id: "adam-mix", cat: "nuts", sub: "blends", unit: "kg", price: 60, img: im("nuts","nuts-7.jpeg"), bestseller: true,
+    { id: "adam-mix", cat: "nuts", sub: "blends", unit: "kg", price: 60, img: im("nuts","nuts-17.jpeg"), bestseller: true,
       name: { ar: "مخلوطة آدم", he: "תערובת אדם" },
       desc: { ar: "خلطة جاهزة مختارة من محمص آدم بمذاق متوازن ومناسب للضيافة.", he: "תערובת הבית של אדם בטעם מאוזן ומושלם לאירוח." } },
-    { id: "custom-mix", cat: "nuts", sub: "blends", unit: "kg", price: 0, img: im("nuts","nuts-10.jpeg"), customMix: true,
+    { id: "custom-mix", cat: "nuts", sub: "blends", unit: "kg", price: 0, img: im("nuts","nuts-17.jpeg"), customMix: true,
       name: { ar: "اصنع مخلوطة خاصة", he: "הרכבת תערובת אישית" },
       desc: { ar: "اختر أنواع المكسرات والوزن لكل نوع، وسيتم حساب السعر تلقائياً حسب اختيارك.", he: "בחרו סוגי פיצוחים ומשקל לכל סוג, והמחיר יחושב אוטומטית." } },
 
@@ -274,6 +275,9 @@
     { id: "esp-3",  cat: "espresso", unit: "piece", price: 50,  img: im("espresso","espresso-3.jpeg"),
       name: { ar: "لافازا إنتينسو", he: "לוואצה אינטנסו" },
       desc: { ar: "كبسولات لافازا إنتينسو بنكهة مكثّفة وكريما غنية.", he: "קפסולות לוואצה אינטנסו בטעם מרוכז וקרמה עשירה." } },
+    { id: "esp-4",  cat: "espresso", unit: "piece", price: "", img: im("espresso","espresso-4.jpeg"),
+      name: { ar: "منتج إسبريسو 4", he: "מוצר אספרסו 4" },
+      desc: { ar: "منتج إسبريسو متوفر في المحمص.", he: "מוצר אספרסו זמין במטחנה." } },
     { id: "esp-5",  cat: "espresso", unit: "piece", price: 90,  img: im("espresso","espresso-5.jpeg"),
       name: { ar: "لافازا فورتي", he: "לוואצה פורטה" },
       desc: { ar: "كبسولات لافازا فورتي القويّة لعشّاق القهوة المركّزة.", he: "קפסולות לוואצה פורטה עוצמתיות לחובבי קפה מרוכז." } },
@@ -298,6 +302,9 @@
     { id: "esp-12", cat: "espresso", unit: "piece", price: 18,  img: im("espresso","espresso-12.jpeg"),
       name: { ar: "كبسولات كابتشينو", he: "קפסולות קפוצ'ינו" },
       desc: { ar: "كبسولات كابتشينو كريمية لماكينة كلوب بمذاق غني.", he: "קפסולות קפוצ'ינו קרמיות למכונת קלאב בטעם עשיר." } },
+    { id: "esp-13", cat: "espresso", unit: "piece", price: 18,  img: im("espresso","espresso-13.png"),
+      name: { ar: "كبسولات كريم", he: "קפסולות קרם" },
+      desc: { ar: "كبسولات كريم لماكينة كلوب بقوام ناعم ونكهة متوازنة.", he: "קפסולות קרם למכונת קלאב במרקם עדין וטעם מאוזן." } },
     { id: "esp-14", cat: "espresso", unit: "piece", price: 80,  img: im("espresso","espresso-14.png"),
       name: { ar: "قهوة سيجافريدو", he: "קפה סגפרדו" },
       desc: { ar: "قهوة سيجافريدو الإيطالية الفاخرة بنكهتها العريقة.", he: "קפה סגפרדו האיטלקי המשובח בטעמו המסורתי." } },
@@ -307,15 +314,35 @@
     { id: "esp-16", cat: "espresso", unit: "piece", price: 20,  img: im("espresso","espresso-16.jpg"),
       name: { ar: "كبسولات دولتشي جوستو", he: "קפסולות דולצ'ה גוסטו" },
       desc: { ar: "كبسولات دولتشي جوستو متنوّعة لمشروبات قهوة متعدّدة.", he: "קפסולות דולצ'ה גוסטו מגוונות למשקאות קפה שונים." } },
+    { id: "esp-17", cat: "espresso", unit: "piece", price: "", img: im("espresso","espresso-17.jpg"),
+      name: { ar: "منتج إسبريسو 17", he: "מוצר אספרסו 17" },
+      desc: { ar: "منتج إسبريسو متوفر في المحمص.", he: "מוצר אספרסו זמין במטחנה." } },
+    { id: "esp-18", cat: "espresso", unit: "piece", price: "", img: im("espresso","espresso-18.jpg"),
+      name: { ar: "منتج إسبريسو 18", he: "מוצר אספרסו 18" },
+      desc: { ar: "منتج إسبريسو متوفر في المحمص.", he: "מוצר אספרסו זמין במטחנה." } },
+    { id: "esp-19", cat: "espresso", unit: "piece", price: "", img: im("espresso","espresso-19.jpg"),
+      name: { ar: "منتج إسبريسو 19", he: "מוצר אספרסו 19" },
+      desc: { ar: "منتج إسبريسو متوفر في المحمص.", he: "מוצר אספרסו זמין במטחנה." } },
     { id: "esp-20", cat: "espresso", unit: "piece", price: 18,  img: im("espresso","espresso-20.png"),
       name: { ar: "كبسولات نسبريسو", he: "קפסולות נספרסו" },
       desc: { ar: "كبسولات متوافقة مع نسبريسو بنكهة إسبريسو غنية.", he: "קפסולות תואמות נספרסו בטעם אספרסו עשיר." } },
+    { id: "esp-21", cat: "espresso", unit: "piece", price: "", img: im("espresso","espresso-21.png"),
+      name: { ar: "منتج إسبريسو 21", he: "מוצר אספרסו 21" },
+      desc: { ar: "منتج إسبريسو متوفر في المحمص.", he: "מוצר אספרסו זמין במטחנה." } },
+    { id: "esp-22", cat: "espresso", unit: "piece", price: "", img: im("espresso","espresso-22.jpeg"),
+      name: { ar: "منتج إسبريسو 22", he: "מוצר אספרסו 22" },
+      desc: { ar: "منتج إسبريسو متوفر في المحمص.", he: "מוצר אספרסו זמין במטחנה." } },
     { id: "esp-23", cat: "espresso", unit: "piece", price: 18,  img: im("espresso","espresso-23.jpeg"),
       name: { ar: "كبسولات شوكولاتة لماكينة كلوب", he: "קפסולות שוקולד למכונת קלאב" },
       desc: { ar: "كبسولات مشروب الشوكولاتة الساخنة لماكينة كلوب.", he: "קפסולות שוקו חם למכונת קלאב." } },
     { id: "esp-24", cat: "espresso", unit: "piece", price: 120, img: im("espresso","espresso-24.jpeg"),
       name: { ar: "سوبر كريما", he: "סופר קרמה" },
       desc: { ar: "خليط سوبر كريما لإسبريسو بطبقة كريما كثيفة ومثالية.", he: "תערובת סופר קרמה לאספרסו עם שכבת קרמה עשירה." } },
+
+    /* ---------------- SPECIALS ---------------- */
+    { id: "offer-espresso-6", cat: "specials", unit: "piece", price: 100, img: im("espresso","عرض 6=100.jpg"), offerBundle: "espresso-club-6",
+      name: { ar: "عرض كبسولات إسبريسو كلوب 6 بـ 100", he: "מבצע קפסולות אספרסו קלאב 6 ב-100" },
+      desc: { ar: "اختر أي 6 أنواع من كبسولات Espresso Club واحصل عليها بـ 100 شيكل.", he: "בחרו כל 6 סוגי קפסולות Espresso Club וקבלו אותן ב-100 ₪." } },
 
     /* ---------------- SWEETS (per piece / package) ---------------- */
     { id: "swt-1", cat: "sweets", unit: "piece", price: 70,  img: im("sweets","sweets-1.jpeg"),
@@ -361,30 +388,63 @@
       desc: { ar: "حلوى عين الشمس بالبزر، مقرمشة وغنية بالطاقة.", he: "חטיף עין השמש עם גרעינים, פריך ועשיר באנרגיה." } },
 
     /* ---------------- GUMMY (by weight) ---------------- */
-    { id: "gum-1", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-19.jpeg"),
-      name: { ar: "حلوى جيلي مشكّلة", he: "סוכריות גומי מעורבות" },
-      desc: { ar: "حلوى جيلي مشكّلة بأشكال وألوان ونكهات فواكه متنوّعة.", he: "סוכריות גומי מעורבות בצורות, צבעים וטעמי פירות." } },
-    { id: "gum-2", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-1.jpeg"),
-      name: { ar: "جيلي دببة", he: "גומי דובונים" },
-      desc: { ar: "جيلي على شكل دببة بنكهات فواكه حلوة ومرحة.", he: "גומי דובונים בטעמי פירות מתוקים ומשמחים." } },
-    { id: "gum-3", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-2.jpeg"),
-      name: { ar: "جيلي حلقات", he: "גומי טבעות" },
-      desc: { ar: "جيلي حلقات بنكهة الفواكه ومذاق منعش.", he: "גומי טבעות בטעם פירות ובמרקם מרענן." } },
-    { id: "gum-4", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-3.jpeg"),
+    { id: "gum-1", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-1.jpeg"),
+      name: { ar: "جيلي توت", he: "גומי תות" },
+      desc: { ar: "جيلي توت بنكهات فواكه حلوة.", he: "גומי תות בטעמי פירות מתוקים." } },
+    { id: "gum-2", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-2.jpeg"),
+      name: { ar: "جيلي عنب", he: "גומי ענבים" },
+      desc: { ar: "جيلي عنب بنكهة فواكه منعشة.", he: "גומי ענבים בטעם פירות מרענן." } },
+    { id: "gum-3", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-3.jpeg"),
       name: { ar: "جيلي فواكه", he: "גומי פירות" },
-      desc: { ar: "جيلي فواكه متنوّع بألوان زاهية ونكهات طبيعية.", he: "גומי פירות מגוון בצבעים עזים ובטעמים." } },
-    { id: "gum-5", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-4.jpeg"),
-      name: { ar: "جيلي ديدان", he: "גומי תולעים" },
-      desc: { ar: "جيلي ديدان مرح بنكهات فواكه ثنائية اللون.", he: "גומי תולעים משעשע בטעמי פירות דו-צבעיים." } },
-    { id: "gum-6", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-5.jpeg"),
+      desc: { ar: "جيلي فواكه متنوع بألوان ونكهات مختلفة.", he: "גומי פירות מגוון בצבעים וטעמים שונים." } },
+    { id: "gum-4", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-4.jpeg"),
+      name: { ar: "جيلي حيتان", he: "גומי לווייתנים" },
+      desc: { ar: "جيلي على شكل حيتان بنكهات فواكه.", he: "גומי בצורת לווייתנים בטעמי פירות." } },
+    { id: "gum-5", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-5.jpeg"),
+      name: { ar: "جيلي مشكل", he: "גומי מעורב" },
+      desc: { ar: "جيلي مشكل بأشكال وألوان متعددة.", he: "גומי מעורב בצורות וצבעים שונים." } },
+    { id: "gum-6", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-6.jpeg"),
+      name: { ar: "جيلي توت مملح", he: "גומי תות מלוח" },
+      desc: { ar: "جيلي توت مملح بطعم مميز.", he: "גומי תות מלוח בטעם מיוחד." } },
+    { id: "gum-7", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-7.jpeg"),
+      name: { ar: "جيلي قلب أزرق", he: "גומי לב כחול" },
+      desc: { ar: "جيلي على شكل قلب أزرق بنكهات فواكه.", he: "גומי בצורת לב כחול בטעמי פירות." } },
+    { id: "gum-8", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-8.jpeg"),
+      name: { ar: "جيلي عظم", he: "גומי עצם" },
+      desc: { ar: "جيلي على شكل عظم بطعم حلو.", he: "גומי בצורת עצם בטעם מתוק." } },
+    { id: "gum-9", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-9.jpeg"),
+      name: { ar: "جيلي نجمة", he: "גומי כוכב" },
+      desc: { ar: "جيلي على شكل نجمة بألوان جميلة.", he: "גומי בצורת כוכב בצבעים יפים." } },
+    { id: "gum-10", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-10.jpeg"),
+      name: { ar: "جيلي بيتزا", he: "גומי פיצה" },
+      desc: { ar: "جيلي على شكل بيتزا بطعم فواكه.", he: "גומי בצורת פיצה בטעמי פירות." } },
+    { id: "gum-11", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-11.jpeg"),
+      name: { ar: "جيلي كرز", he: "גומי דובדבן" },
+      desc: { ar: "جيلي كرز بطعم فاكهي غني.", he: "גומי דובדבן בטעם פירות עשיר." } },
+    { id: "gum-12", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-12.jpeg"),
+      name: { ar: "جيلي بطيخ", he: "גומי אבטיח" },
+      desc: { ar: "جيلي بطيخ بطعم منعش.", he: "גומי אבטיח בטעם מרענן." } },
+    { id: "gum-13", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-13.jpeg"),
+      name: { ar: "جيلي كولا مملح", he: "גומי קולה מלוח" },
+      desc: { ar: "جيلي كولا مملح بطعم مميز.", he: "גומי קולה מלוח בטעם מיוחד." } },
+    { id: "gum-14", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-14.jpeg"),
+      name: { ar: "جيلي بيض", he: "גומי ביצים" },
+      desc: { ar: "جيلي على شكل بيض بطعم حلو.", he: "גומי בצורת ביצים בטעם מתוק." } },
+    { id: "gum-15", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-15.jpeg"),
+      name: { ar: "جيلي دببة", he: "גומי דובונים" },
+      desc: { ar: "جيلي دببة كلاسيكي بنكهات فواكه.", he: "גומי דובונים קלאסי בטעמי פירות." } },
+    { id: "gum-16", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-16.jpeg"),
+      name: { ar: "جيلي موز", he: "גומי בננה" },
+      desc: { ar: "جيلي موز بطعم حلو ومميز.", he: "גומי בננה בטעם מתוק ומיוחד." } },
+    { id: "gum-17", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-17.jpeg"),
+      name: { ar: "جيلي حيتان", he: "גומי לווייתנים" },
+      desc: { ar: "جيلي حيتان ملون بنكهات فواكه.", he: "גומי לווייתנים צבעוני בטעמי פירות." } },
+    { id: "gum-18", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-18.jpeg"),
+      name: { ar: "جيلي ديدان ملون", he: "גומי תולעים צבעוני" },
+      desc: { ar: "جيلي ديدان ملون بنكهات فواكه.", he: "גומי תולעים צבעוני בטעמי פירות." } },
+    { id: "gum-19", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-19.jpeg"),
       name: { ar: "جيلي كولا", he: "גומי קולה" },
-      desc: { ar: "جيلي بنكهة الكولا المنعشة بشكله الكلاسيكي.", he: "גומי בטעם קולה מרענן בצורתו הקלאסית." } },
-    { id: "gum-7", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-6.jpeg"),
-      name: { ar: "جيلي قلوب", he: "גומי לבבות" },
-      desc: { ar: "جيلي على شكل قلوب بنكهات فواكه حلوة ورومانسية.", he: "גומי לבבות בטעמי פירות מתוקים." } },
-    { id: "gum-8", cat: "gummy", unit: "kg", price: 45, img: im("gummy","gummy-7.jpeg"),
-      name: { ar: "جيلي حامض", he: "גומי חמוץ" },
-      desc: { ar: "جيلي حامض بطبقة سكر لاذعة ونكهات فواكه قويّة.", he: "גומי חמוץ בציפוי סוכר חמצמץ ובטעמי פירות עזים." } }
+      desc: { ar: "جيلي كولا بطعم كلاسيكي.", he: "גומי קולה בטעם קלאסי." } }
   ];
 
   // Delivery rules — fee in shekels keyed by normalized city/village.
@@ -394,5 +454,15 @@
     pickup: { fee: 0 }
   };
 
-  window.AdamData = { STORE, WEIGHTS, CATEGORIES, PRODUCTS, DELIVERY };
+  const PROMOS = [
+    {
+      id: "espresso-club-6",
+      ids: ["esp-1", "esp-2", "esp-11", "esp-12", "esp-13", "esp-23"],
+      qty: 6,
+      unitPrice: 18,
+      bundlePrice: 100
+    }
+  ];
+
+  window.AdamData = { STORE, WEIGHTS, CATEGORIES, PRODUCTS, DELIVERY, PROMOS };
 })();

@@ -61,10 +61,14 @@
   }
 
   function fmtNum(n) {
+    if (n == null || n === "" || !Number.isFinite(+n)) return "";
     const r = Math.round(n * 2) / 2;            // nearest 0.5 ₪
     return Number.isInteger(r) ? String(r) : r.toFixed(1);
   }
-  function money(n) { return fmtNum(n) + " ₪"; }
+  function money(n) {
+    const formatted = fmtNum(n);
+    return formatted ? formatted + " ₪" : "";
+  }
 
   /* ---------------- Input sanitization (OWASP: validate/sanitize input) ----
      Central, reusable cleaner for every free-text user input (checkout fields,
@@ -99,11 +103,13 @@
 
   // Price for one item at given weight(g)/qty, after optional offer %
   function unitPrice(p, weight) {
+    if (!p || p.price == null || p.price === "" || !Number.isFinite(+p.price)) return null;
     let base = p.unit === "kg" ? p.price * (weight / 1000) : p.price;
     if (p.offer) base = base * (1 - p.offer / 100);
     return base;
   }
   function oldUnitPrice(p, weight) {
+    if (!p || p.price == null || p.price === "" || !Number.isFinite(+p.price)) return null;
     return p.unit === "kg" ? p.price * (weight / 1000) : p.price;
   }
   function productById(id) { return DATA.PRODUCTS.find(p => p.id === id); }

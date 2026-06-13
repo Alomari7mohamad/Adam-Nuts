@@ -47,13 +47,35 @@
     if (p.fixedWeight) return "/ " + A.nameOf(p.fixedWeight);
     return A.t("per_piece");
   }
+  function hasPrice(value) {
+    return value != null && value !== "" && Number.isFinite(+value);
+  }
+  function priceHtml(value) {
+    return hasPrice(value) ? '<span class="cur">₪</span>' + A.escapeHtml(A.fmtNum(value)) : "";
+  }
+  function promoFor(p) {
+    return (DATA.PROMOS || []).find(promo => promo.ids.includes(p.id));
+  }
+  function promoById(id) {
+    return (DATA.PROMOS || []).find(promo => promo.id === id);
+  }
+  function promoSave(promo) {
+    return Math.max(0, promo.qty * promo.unitPrice - promo.bundlePrice);
+  }
+  function promoHint(promo) {
+    return A.t("promo_6_hint")
+      .replace("{qty}", promo.qty)
+      .replace("{price}", A.money(promo.bundlePrice))
+      .replace("{save}", A.money(promoSave(promo)));
+  }
   const PRODUCT_ORDER = {
     nuts: [
       "nuts-13", "nuts-10", "nuts-14", "nuts-7", "nuts-6",
       "nuts-15", "nuts-16", "nuts-11", "nuts-8", "nuts-5"
     ],
     "natural-nuts": ["nat-7", "nat-8", "nat-9", "nat-6", "nat-2"],
-    espresso: ["esp-8", "esp-9", "esp-10"]
+    espresso: ["esp-8", "esp-9", "esp-10"],
+    specials: ["offer-espresso-6", "esp-1", "esp-2", "esp-11", "esp-12", "esp-13", "esp-23"]
   };
   function sortProducts(list) {
     return list.map((product, index) => ({ product, index })).sort((a, b) => {
@@ -101,8 +123,10 @@
     });
 
     const badges = A.el("div", { class: "pc-badges" });
+    const promo = promoFor(p);
     if (p.bestseller) badges.append(A.el("span", { class: "badge badge-best", html: A.icon("star") + "<span>" + A.escapeHtml(A.t("bestseller_badge")) + "</span>" }));
     if (p.offer) badges.append(A.el("span", { class: "badge badge-offer", text: "-" + p.offer + "%" }));
+    if (promo) badges.append(A.el("span", { class: "badge badge-offer", text: promo.qty + "=" + promo.bundlePrice }));
     media.append(badges);
 
     const favBtn = A.el("button", {
@@ -127,9 +151,12 @@
         unitEl.textContent = "";
         return;
       }
-      priceEl.innerHTML = '<span class="cur">₪</span>' + A.escapeHtml(A.fmtNum(A.unitPrice(p, w)));
-      if (p.offer) { oldEl.textContent = A.money(A.oldUnitPrice(p, w)); oldEl.classList.remove("hidden"); }
-      unitEl.textContent = priceUnitText(p, isKg, w);
+      const price = A.unitPrice(p, w);
+      priceEl.innerHTML = priceHtml(price);
+      oldEl.classList.add("hidden");
+      oldEl.textContent = "";
+      if (p.offer && hasPrice(A.oldUnitPrice(p, w))) { oldEl.textContent = A.money(A.oldUnitPrice(p, w)); oldEl.classList.remove("hidden"); }
+      unitEl.textContent = hasPrice(price) ? priceUnitText(p, isKg, w) : "";
     }
     paintPrice(defaultW);
     const priceRow = A.el("div", { class: "pc-price-row" }, priceEl, oldEl, unitEl);
@@ -144,6 +171,7 @@
       nameEl,
       p.desc ? A.el("p", { class: "pc-desc", text: A.nameOf(p.desc) }) : null,
       priceRow,
+      promo ? A.el("div", { class: "promo-hint", text: promoHint(promo) }) : null,
       A.el("div", { class: "pc-actions" }, addBtn)
     );
 
@@ -163,26 +191,47 @@
     if (close) close.addEventListener("click", A.closeAllDrawers);
   }
 
+  function openImageZoom(src, alt) {
+    document.querySelector(".image-zoom-layer")?.remove();
+    const layer = A.el("div", { class: "image-zoom-layer", role: "dialog", "aria-modal": "true" },
+      A.el("button", { class: "image-zoom-close", type: "button", "aria-label": A.t("back"), html: A.icon("close") }),
+      A.el("img", { src, alt: alt || "" })
+    );
+    layer.addEventListener("click", event => {
+      if (event.target === layer || event.target.closest(".image-zoom-close")) layer.remove();
+    });
+    document.body.append(layer);
+    requestAnimationFrame(() => layer.classList.add("show"));
+  }
+
   function openQuickView(p, opts) {
     opts = opts || {};
     if (p.customMix) { openCustomMix(p, opts); return; }
+    if (p.offerBundle) { openOfferBundle(p, opts); return; }
     buildQuickView();
     const body = document.getElementById("qvBody");
     const isKg = p.unit === "kg";
     const defaultW = opts.weight || (isKg ? (p.cat === "spices" ? 100 : 500) : 1000);
     body.textContent = "";
 
-    const media = A.el("div", { class: "qv-media" }, A.el("img", { src: p.img, alt: A.nameOf(p.name) }));
+    const mediaImg = A.el("img", { src: p.img, alt: A.nameOf(p.name) });
+    const media = A.el("button", { type: "button", class: "qv-media qv-media-click", "aria-label": A.nameOf(p.name) }, mediaImg);
+    media.addEventListener("click", () => openImageZoom(p.img, A.nameOf(p.name)));
+    const promo = promoFor(p);
     if (p.bestseller) media.append(A.el("span", { class: "badge badge-best qv-badge", html: A.icon("star") + "<span>" + A.escapeHtml(A.t("bestseller_badge")) + "</span>" }));
     if (p.offer) media.append(A.el("span", { class: "badge badge-offer qv-badge2", text: "-" + p.offer + "%" }));
+    if (promo) media.append(A.el("span", { class: "badge badge-offer qv-badge2", text: promo.qty + "=" + promo.bundlePrice }));
 
     const priceEl = A.el("span", { class: "pc-price", style: "font-size:26px" });
     const oldEl = A.el("span", { class: "pc-old hidden" });
     const unitEl = A.el("span", { class: "pc-unit" });
     function paint(w) {
-      priceEl.innerHTML = '<span class="cur">₪</span>' + A.escapeHtml(A.fmtNum(A.unitPrice(p, w)));
-      if (p.offer) { oldEl.textContent = A.money(A.oldUnitPrice(p, w)); oldEl.classList.remove("hidden"); }
-      unitEl.textContent = priceUnitText(p, isKg, w);
+      const price = A.unitPrice(p, w);
+      priceEl.innerHTML = priceHtml(price);
+      oldEl.classList.add("hidden");
+      oldEl.textContent = "";
+      if (p.offer && hasPrice(A.oldUnitPrice(p, w))) { oldEl.textContent = A.money(A.oldUnitPrice(p, w)); oldEl.classList.remove("hidden"); }
+      unitEl.textContent = hasPrice(price) ? priceUnitText(p, isKg, w) : "";
     }
     paint(defaultW);
 
@@ -215,6 +264,7 @@
       A.el("h2", { class: "qv-name", text: A.nameOf(p.name) }),
       p.desc ? A.el("p", { class: "qv-desc", text: A.nameOf(p.desc) }) : null,
       A.el("div", { class: "pc-price-row", style: "margin:6px 0 4px" }, priceEl, oldEl, unitEl),
+      promo ? A.el("div", { class: "promo-hint qv-promo-hint", text: promoHint(promo) }) : null,
       isKg ? controls : A.el("div", { class: "pc-unit", text: A.t("per_piece") }),
       A.el("div", { class: "field product-note-field" },
         A.el("label", { text: A.t("product_notes") }),
@@ -226,22 +276,124 @@
     A.openDrawer("quickView");
   }
 
+  function openOfferBundle(p, opts) {
+    opts = opts || {};
+    buildQuickView();
+    const body = document.getElementById("qvBody");
+    body.textContent = "";
+    const promo = promoById(p.offerBundle);
+    if (!promo) { openQuickView(Object.assign({}, p, { offerBundle: null }), opts); return; }
+    const choices = promo.ids.map(id => DATA.PRODUCTS.find(x => x.id === id)).filter(Boolean);
+    const selected = new Map();
+    if (Array.isArray(opts.components)) {
+      opts.components.forEach(c => {
+        if (c && c.id && Number.isInteger(+c.qty) && +c.qty > 0) selected.set(c.id, Math.min(+c.qty, promo.qty));
+      });
+    }
+
+    const countEl = A.el("span", { class: "offer-count" });
+    const add = A.el("button", { class: "btn btn-gold btn-block", disabled: "disabled", html: A.icon("cart") + "<span>" + A.escapeHtml(opts.replaceKey ? A.t("save_changes") : A.t("add_to_cart")) + "</span>" });
+    const list = A.el("div", { class: "mix-builder offer-builder" });
+
+    function totalQty() {
+      let total = 0;
+      selected.forEach(qty => { total += qty; });
+      return total;
+    }
+    function sync() {
+      const total = totalQty();
+      countEl.textContent = A.t("offer_selected_count").replace("{count}", total).replace("{qty}", promo.qty);
+      add.disabled = total !== promo.qty;
+      list.querySelectorAll(".mix-card").forEach(card => {
+        const qty = selected.get(card.dataset.productId) || 0;
+        card.classList.toggle("active", qty > 0);
+        card.setAttribute("aria-pressed", String(qty > 0));
+        const qtyEl = card.querySelector(".offer-card-qty");
+        if (qtyEl) qtyEl.textContent = String(qty);
+        const minus = card.querySelector("[data-offer-minus]");
+        const plus = card.querySelector("[data-offer-plus]");
+        if (minus) minus.disabled = qty <= 0;
+        if (plus) plus.disabled = total >= promo.qty;
+      });
+    }
+    function setQty(id, qty) {
+      qty = Math.max(0, Math.min(promo.qty, qty));
+      if (qty) selected.set(id, qty);
+      else selected.delete(id);
+      sync();
+    }
+
+    choices.forEach(item => {
+      const qty = A.el("span", { class: "offer-card-qty", text: "0" });
+      const minus = A.el("button", { type: "button", class: "offer-card-step", "data-offer-minus": "true", "aria-label": "-", html: A.icon("minus") });
+      const plus = A.el("button", { type: "button", class: "offer-card-step", "data-offer-plus": "true", "aria-label": "+", html: A.icon("plus") });
+      const card = A.el("div", { class: "mix-card offer-card", "aria-pressed": "false", dataset: { productId: item.id } },
+        A.el("span", { class: "mix-card-check", html: A.icon("check") }),
+        A.el("img", { src: item.img, alt: "" }),
+        A.el("strong", { text: A.nameOf(item.name) }),
+        A.el("small", { text: A.money(item.price) ? A.money(item.price) + " / " + A.t("per_piece") : "" }),
+        A.el("div", { class: "offer-card-controls" }, minus, qty, plus)
+      );
+      card.addEventListener("click", event => {
+        if (event.target.closest(".offer-card-step")) return;
+        const current = selected.get(item.id) || 0;
+        if (current > 0) setQty(item.id, 0);
+        else if (totalQty() < promo.qty) setQty(item.id, 1);
+      });
+      minus.addEventListener("click", () => setQty(item.id, (selected.get(item.id) || 0) - 1));
+      plus.addEventListener("click", () => setQty(item.id, (selected.get(item.id) || 0) + 1));
+      list.append(card);
+    });
+
+    add.addEventListener("click", () => {
+      if (totalQty() !== promo.qty) { A.toast(A.t("offer_must_choose").replace("{qty}", promo.qty), "info"); return; }
+      const components = [];
+      selected.forEach((qty, id) => {
+        const item = DATA.PRODUCTS.find(x => x.id === id);
+        if (item) components.push({ id, qty, name: A.nameOf(item.name), price: item.price * qty });
+      });
+      const note = components.map(c => c.name + " × " + c.qty).join("، ");
+      if (opts.replaceKey) window.AdamCart.remove(opts.replaceKey);
+      window.AdamCart.add(p.id, 1000, 1, note, { customPrice: promo.bundlePrice, components, userNotes: "" });
+      setTimeout(() => A.closeAllDrawers(), 500);
+    });
+
+    body.append(
+      A.el("button", { type: "button", class: "qv-media qv-media-click", "aria-label": A.nameOf(p.name), onclick: () => openImageZoom(p.img, A.nameOf(p.name)) }, A.el("img", { src: p.img, alt: A.nameOf(p.name) })),
+      A.el("h2", { class: "qv-name", text: A.nameOf(p.name) }),
+      A.el("p", { class: "qv-desc", text: A.nameOf(p.desc) }),
+      A.el("div", { class: "mix-total offer-total" }, A.el("span", { text: A.t("mix_total") }), A.el("strong", { text: A.money(promo.bundlePrice) })),
+      A.el("div", { class: "offer-count-row" }, countEl),
+      A.el("h3", { class: "mix-title", text: A.t("choose_offer_items") }),
+      list,
+      add
+    );
+    sync();
+    A.openDrawer("quickView");
+  }
+
   function openCustomMix(p, opts) {
+    opts = opts || {};
     buildQuickView();
     const body = document.getElementById("qvBody");
     body.textContent = "";
     const choices = sortProducts(DATA.PRODUCTS.filter(x => x.cat === "nuts" && x.unit === "kg" && !x.customMix && x.id !== "adam-mix"));
     const selected = new Map();
+    if (Array.isArray(opts.components)) {
+      opts.components.forEach(c => {
+        if (c && c.id && Number.isFinite(+c.weight)) selected.set(c.id, +c.weight);
+      });
+    }
     let activeId = null;
     const priceEl = A.el("span", { class: "pc-price", style: "font-size:24px" });
     function calc() {
       let total = 0;
       selected.forEach((weight, id) => {
         const item = DATA.PRODUCTS.find(x => x.id === id);
-        if (item) total += A.unitPrice(item, weight);
+        if (item && hasPrice(A.unitPrice(item, weight))) total += A.unitPrice(item, weight);
       });
       if (total > 0) {
-        priceEl.innerHTML = '<span class="cur">₪</span>' + A.escapeHtml(A.fmtNum(total));
+        priceEl.innerHTML = priceHtml(total);
       } else {
         priceEl.textContent = A.t("price_on_selection");
       }
@@ -249,6 +401,11 @@
       return total;
     }
     const list = A.el("div", { class: "mix-builder" });
+    function cleanEditNotes() {
+      if (opts.userNotes) return opts.userNotes;
+      if (!opts.components?.length || !opts.notes) return opts.notes || "";
+      return String(opts.notes).split("\n").slice(1).join("\n");
+    }
 
     function syncCards() {
       list.querySelectorAll(".mix-card").forEach(card => {
@@ -335,7 +492,7 @@
         A.el("span", { class: "mix-card-check", html: A.icon("check") }),
         A.el("img", { src: item.img, alt: "" }),
         A.el("strong", { text: A.nameOf(item.name) }),
-        A.el("small", { text: A.money(A.unitPrice(item, 100)) + " / " + weightText(100) })
+        A.el("small", { text: A.money(A.unitPrice(item, 100)) ? A.money(A.unitPrice(item, 100)) + " / " + weightText(100) : "" })
       );
       card.addEventListener("click", () => {
         openWeightDialog(item);
@@ -343,7 +500,8 @@
       list.append(card);
     });
     const notes = A.el("textarea", { class: "product-notes", maxlength: "180", placeholder: A.t("product_notes_ph"), "aria-label": A.t("product_notes") });
-    const add = A.el("button", { class: "btn btn-gold btn-block", disabled: "disabled", html: A.icon("cart") + "<span>" + A.escapeHtml(A.t("add_to_cart")) + "</span>" });
+    notes.value = cleanEditNotes();
+    const add = A.el("button", { class: "btn btn-gold btn-block", disabled: "disabled", html: A.icon("cart") + "<span>" + A.escapeHtml(opts.replaceKey ? A.t("save_changes") : A.t("add_to_cart")) + "</span>" });
     add.addEventListener("click", () => {
       const components = [];
       selected.forEach((weight, id) => {
@@ -353,13 +511,14 @@
       if (!components.length) return;
       const total = calc();
       const componentNotes = components.map(c => c.name + " " + weightText(c.weight)).join("، ");
-      const note = [componentNotes, A.sanitizeInput(notes.value, { maxLen: 180, multiline: true })].filter(Boolean).join("\n");
+      const userNotes = A.sanitizeInput(notes.value, { maxLen: 180, multiline: true });
+      const note = [componentNotes, userNotes].filter(Boolean).join("\n");
       if (opts.replaceKey) window.AdamCart.remove(opts.replaceKey);
-      window.AdamCart.add(p.id, 1000, 1, note, { customPrice: total, components });
+      window.AdamCart.add(p.id, 1000, 1, note, { customPrice: total, components, userNotes });
       setTimeout(() => A.closeAllDrawers(), 500);
     });
     body.append(
-      A.el("div", { class: "qv-media" }, A.el("img", { src: p.img, alt: A.nameOf(p.name) })),
+      A.el("button", { type: "button", class: "qv-media qv-media-click", "aria-label": A.nameOf(p.name), onclick: () => openImageZoom(p.img, A.nameOf(p.name)) }, A.el("img", { src: p.img, alt: A.nameOf(p.name) })),
       A.el("h2", { class: "qv-name", text: A.nameOf(p.name) }),
       A.el("p", { class: "qv-desc", text: A.nameOf(p.desc) }),
       A.el("div", { class: "mix-total" }, A.el("span", { text: A.t("mix_total") }), priceEl),
@@ -369,6 +528,7 @@
       add
     );
     calc();
+    syncCards();
     A.openDrawer("quickView");
   }
 
@@ -392,6 +552,34 @@
       node.addEventListener("click", () => setCat(c.id));
       wrap.append(node);
     });
+    updateCatsArrows();
+  }
+
+  function updateCatsArrows() {
+    const wrap = document.getElementById("cats");
+    const box = wrap && wrap.closest(".cats-wrap");
+    if (!wrap || !box) return;
+    const max = Math.max(0, wrap.scrollWidth - wrap.clientWidth - 2);
+    const prev = box.querySelector(".cats-arrow-prev");
+    const next = box.querySelector(".cats-arrow-next");
+    if (prev) prev.classList.toggle("hidden", max <= 0);
+    if (next) next.classList.toggle("hidden", max <= 0);
+    box.classList.toggle("no-scroll", max <= 0);
+  }
+
+  function initCatsArrows() {
+    const wrap = document.getElementById("cats");
+    const box = wrap && wrap.closest(".cats-wrap");
+    if (!wrap || !box || box.dataset.ready) return;
+    box.dataset.ready = "true";
+    box.querySelectorAll("[data-cats-scroll]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const dir = Number(btn.dataset.catsScroll) || 1;
+        wrap.scrollBy({ left: dir * Math.max(160, wrap.clientWidth * 0.65), behavior: "smooth" });
+      });
+    });
+    wrap.addEventListener("scroll", updateCatsArrows, { passive: true });
+    window.addEventListener("resize", updateCatsArrows);
   }
 
   /* ---------- Subcategories ----------
@@ -423,17 +611,29 @@
     list.forEach(p => wrap.append(card(p)));
   }
 
+  function haystack(p) {
+    return (p.name.ar + " " + p.name.he + " " + (p.desc ? p.desc.ar + " " + p.desc.he : "")).toLowerCase();
+  }
+
   function filtered() {
     const q = state.q.trim().toLowerCase();
-    return sortProducts(DATA.PRODUCTS.filter(p => {
+    const list = DATA.PRODUCTS.filter(p => {
+      if (q) return haystack(p).includes(q);
+      if (state.cat === "specials" && p.cat !== "specials" && !promoFor(p)) return false;
+      if (state.cat === "specials") return !q || (p.name.ar + " " + p.name.he + " " + (p.desc ? p.desc.ar + " " + p.desc.he : "")).toLowerCase().includes(q);
       if (state.cat !== "all" && p.cat !== state.cat) return false;
       if (state.sub !== "all" && p.sub !== state.sub) return false;
-      if (q) {
-        const hay = (p.name.ar + " " + p.name.he + " " + (p.desc ? p.desc.ar + " " + p.desc.he : "")).toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
       return true;
-    }));
+    });
+    if (state.cat === "specials") {
+      const order = PRODUCT_ORDER.specials || [];
+      return list.map((product, index) => ({ product, index })).sort((a, b) => {
+        const ai = order.indexOf(a.product.id);
+        const bi = order.indexOf(b.product.id);
+        return (ai < 0 ? order.length + a.index : ai) - (bi < 0 ? order.length + b.index : bi);
+      }).map(entry => entry.product);
+    }
+    return sortProducts(list);
   }
 
   function renderCatalog() {
@@ -484,14 +684,75 @@
     if (!input) return;
     const bar = input.closest(".search-bar");
     const clear = bar && bar.querySelector(".search-clear");
+    const wrap = input.closest(".search-wrap");
+    const suggestions = A.el("div", { class: "search-suggest hidden", role: "listbox" });
+    if (wrap && !wrap.querySelector(".search-suggest")) wrap.append(suggestions);
+
+    function matches(q) {
+      q = q.trim().toLowerCase();
+      if (!q) return [];
+      return sortProducts(DATA.PRODUCTS.filter(p => haystack(p).includes(q))).slice(0, 3);
+    }
+
+    function hideSuggestions() {
+      suggestions.classList.add("hidden");
+      suggestions.textContent = "";
+    }
+
+    function showSuggestions(q) {
+      const list = matches(q);
+      suggestions.textContent = "";
+      if (!list.length) { hideSuggestions(); return; }
+      list.forEach(p => {
+        const item = A.el("button", { type: "button", class: "search-suggest-item", role: "option" },
+          A.el("img", { src: p.img, alt: "" }),
+          A.el("span", { class: "search-suggest-text" },
+            A.el("strong", { text: A.nameOf(p.name) }),
+            A.el("small", { text: p.customMix ? A.t("price_on_selection") : A.money(A.unitPrice(p, p.unit === "kg" ? (p.cat === "spices" ? 100 : 1000) : 1000)) })
+          )
+        );
+        item.addEventListener("click", () => {
+          input.value = A.nameOf(p.name);
+          state.q = A.sanitizeInput(input.value, { maxLen: 60 });
+          hideSuggestions();
+          renderCatalog();
+          openQuickView(p);
+        });
+        suggestions.append(item);
+      });
+      suggestions.classList.remove("hidden");
+    }
+
     let tmr;
     input.addEventListener("input", () => {
       if (bar) bar.classList.toggle("has-text", input.value.length > 0);
       clearTimeout(tmr);
-      tmr = setTimeout(() => { state.q = A.sanitizeInput(input.value, { maxLen: 60 }); renderCatalog(); }, 120);
+      const clean = A.sanitizeInput(input.value, { maxLen: 60 });
+      showSuggestions(clean);
+      tmr = setTimeout(() => {
+        state.q = clean;
+        renderCatalog();
+      }, 120);
+    });
+    input.addEventListener("focus", () => showSuggestions(input.value));
+    input.addEventListener("keydown", event => {
+      if (event.key === "Escape") hideSuggestions();
+      if (event.key === "Enter") {
+        const first = matches(input.value)[0];
+        if (first) {
+          event.preventDefault();
+          hideSuggestions();
+          state.q = A.sanitizeInput(input.value, { maxLen: 60 });
+          renderCatalog();
+          openQuickView(first);
+        }
+      }
+    });
+    document.addEventListener("click", event => {
+      if (wrap && !wrap.contains(event.target)) hideSuggestions();
     });
     if (clear) clear.addEventListener("click", () => {
-      input.value = ""; state.q = ""; bar.classList.remove("has-text"); renderCatalog(); input.focus();
+      input.value = ""; state.q = ""; bar.classList.remove("has-text"); hideSuggestions(); renderCatalog(); input.focus();
     });
   }
 
@@ -529,11 +790,12 @@
   }
 
   function init() {
-    const params = new URLSearchParams(location.search);
-    const c = params.get("cat");
-    if (c && (c === "all" || DATA.CATEGORIES.some(x => x.id === c))) state.cat = c;
+    state.cat = "nuts";
+    state.sub = "all";
+    state.q = "";
     buildQuickView();
     initSearch();
+    initCatsArrows();
     renderAll();
   }
 

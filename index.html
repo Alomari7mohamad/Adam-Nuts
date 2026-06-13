@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=Tajawal:wght@400;500;700&family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@400;500;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/style.css?v=hero-profile" />
+  <link rel="stylesheet" href="css/style.css?v=cats-side-arrows" />
   <link rel="stylesheet" href="css/animations.css?v=fab-icons" />
   <link rel="stylesheet" href="css/responsive.css?v=a11y-panel" />
 </head>
@@ -53,8 +53,13 @@
     </div>
 
     <!-- Categories -->
-    <div class="flourish">✦</div>
-    <div class="cats" id="cats" role="list" aria-label="categories"></div>
+    <div class="flourish"> ✦ </div>
+    <div class="cats-wrap" aria-label="categories">
+
+      <button class="cats-arrow cats-arrow-next" type="button" data-cats-scroll="-1" aria-label="التالي"></button>
+      <div class="cats" id="cats" role="list" aria-label="categories"></div>
+      <button class="cats-arrow cats-arrow-prev" type="button" data-cats-scroll="1" aria-label="السابق"></button>
+    </div>
 
     <!-- Occasions banner -->
     <section class="section" id="offers">
@@ -79,13 +84,13 @@
 
   </div>
 
-  <script src="js/data.js?v=mix-cards"></script>
-  <script src="js/translations.js?v=favorites-sheet"></script>
-  <script src="js/main.js?v=fab-icons"></script>
-  <script src="js/accessibility.js?v=a11y-panel"></script>
-  <script src="js/products.js?v=mix-nuts-order"></script>
-  <script src="js/cart.js?v=cart-center"></script>
-  <script src="js/checkout.js?v=home-menu"></script>
+  <script src="js/data.js?v=espresso-empty-price"></script>
+  <script src="js/translations.js?v=espresso-offer"></script>
+  <script src="js/main.js?v=espresso-empty-price"></script>
+  <script src="js/accessibility.js?v=a11y-lang-sync"></script>
+  <script src="js/products.js?v=load-nuts-default"></script>
+  <script src="js/cart.js?v=espresso-offer"></script>
+  <script src="js/checkout.js?v=espresso-offer"></script>
   <script src="js/animations.js"></script>
 </body>
 </html>

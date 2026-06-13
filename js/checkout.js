@@ -6,6 +6,7 @@
   const A = window.Adam;
   const DATA = window.AdamData;
 
+  const FREE_DELIVERY_MIN = 300;
   const form = { name: "", type: "pickup", location: "", currentLocation: "", notes: "" };
 
   /* ---------- Delivery fee derivation ---------- */
@@ -14,10 +15,22 @@
   }
   function deliveryFee() {
     if (form.type === "pickup") return 0;
+    if (window.AdamCart.subtotal() >= FREE_DELIVERY_MIN) return 0;
     const loc = normalize(form.location);
     if (!loc) return DATA.DELIVERY.far.fee;
     const near = DATA.DELIVERY.near.places.some(p => loc.includes(normalize(p)));
     return near ? DATA.DELIVERY.near.fee : DATA.DELIVERY.far.fee;
+  }
+
+  function freeDeliveryMessage(sub) {
+    if (sub >= FREE_DELIVERY_MIN) return A.t("free_delivery_unlocked");
+    return A.t("free_delivery_hint") + " " + A.t("free_delivery_remaining").replace("{amount}", A.money(FREE_DELIVERY_MIN - sub));
+  }
+
+  function deliveryFeeText(fee, sub) {
+    if (form.type === "delivery" && sub >= FREE_DELIVERY_MIN) return A.t("free_delivery_label");
+    if (fee === 0) return "—";
+    return A.money(fee);
   }
 
   /* ---------- Render form ---------- */
@@ -66,6 +79,10 @@
       A.el("label", { html: A.escapeHtml(A.t("order_type")) + ' <span class="req">*</span>' }),
       A.el("div", { class: "order-type" }, pickup, deliver)
     );
+    const freeDeliveryNote = A.el("div", { class: "free-delivery-note" },
+      A.el("span", { class: "free-delivery-ico", html: A.icon("truck") }),
+      A.el("span", { class: "free-delivery-text" })
+    );
 
     // ----- Delivery fields -----
     const locField = field("location", "delivery_location", "delivery_location_ph", "input", false);
@@ -85,17 +102,17 @@
     const totals = A.el("div", { class: "totals", id: "ckTotals" });
 
     // ----- Send button -----
-    const send = A.el("button", { class: "btn btn-gold btn-block", style: "margin-top:6px", html: A.icon("whatsapp") + "<span>" + A.escapeHtml(A.t("send_order")) + "</span>" });
+    const send = A.el("button", { class: "btn btn-gold btn-block", "data-checkout-send": "true", style: "margin-top:6px", html: A.icon("whatsapp") + "<span>" + A.escapeHtml(A.t("send_order")) + "</span>" });
     send.addEventListener("click", submit);
 
     const back = A.el("button", { class: "btn btn-outline btn-block", style: "margin-top:10px;color:var(--brown-700);border-color:var(--line)", html: A.icon("cart") + "<span>" + A.escapeHtml(A.t("view_cart")) + "</span>" });
     back.style.color = "var(--brown-700)";
     back.addEventListener("click", () => { A.closeAllDrawers(); window.AdamCart.open(); });
 
-    body.append(summary, nameField.wrap, typeWrap, deliveryWrap, totals, send, back);
+    body.append(summary, nameField.wrap, typeWrap, freeDeliveryNote, deliveryWrap, totals, send, back);
 
     // keep refs for live updates
-    body._refs = { nameField, locField, deliveryWrap, totals, pickup, deliver };
+    body._refs = { nameField, locField, deliveryWrap, totals, pickup, deliver, freeDeliveryNote };
     updateTotals();
   }
 
@@ -137,13 +154,23 @@
     const totals = document.getElementById("ckTotals");
     if (!totals) return;
     const sub = window.AdamCart.subtotal();
+    const discount = window.AdamCart.promoDiscount ? window.AdamCart.promoDiscount() : 0;
     const fee = deliveryFee();
+    const body = document.getElementById("checkoutBody");
+    const note = body && body._refs && body._refs.freeDeliveryNote;
+    if (note) {
+      note.classList.toggle("unlocked", sub >= FREE_DELIVERY_MIN);
+      note.querySelector(".free-delivery-text").textContent = freeDeliveryMessage(sub);
+    }
     totals.textContent = "";
-    totals.append(
+    const rows = [];
+    if (discount) rows.push(row(A.t("promo_discount"), "-" + A.money(discount)));
+    rows.push(
       row(A.t("subtotal"), A.money(sub)),
-      row(A.t("delivery_fee"), fee === 0 ? (A.lang() === "he" ? "—" : "—") : A.money(fee)),
+      row(A.t("delivery_fee"), deliveryFeeText(fee, sub)),
       row(A.t("total"), A.money(sub + fee), true)
     );
+    totals.append(...rows);
   }
   function row(label, val, grand) {
     return A.el("div", { class: "row" + (grand ? " grand" : "") },
@@ -154,6 +181,56 @@
   let busy = false; // guards against accidental double-tap opening many tabs
                     // (a UX guard — NOT server-side API rate limiting, which
                     //  is N/A for a backend-less static site)
+
+  function fallbackCopy(text) {
+    const ta = A.el("textarea", { value: text, readonly: "readonly" });
+    ta.style.position = "fixed";
+    ta.style.insetInlineStart = "-9999px";
+    ta.style.opacity = "0";
+    document.body.append(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (_) {}
+    ta.remove();
+    return ok;
+  }
+
+  function copyOrderText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => A.toast(A.t("order_text_copied"), "check"))
+        .catch(() => A.toast(fallbackCopy(text) ? A.t("order_text_copied") : A.t("order_text_copy_failed"), "info"));
+      return;
+    }
+    A.toast(fallbackCopy(text) ? A.t("order_text_copied") : A.t("order_text_copy_failed"), "info");
+  }
+
+  function showSendFollowup(message) {
+    const body = document.getElementById("checkoutBody");
+    if (!body) return;
+    body.querySelector(".order-send-followup")?.remove();
+
+    const copyBtn = A.el("button", { type: "button", class: "btn btn-outline btn-block order-copy-btn", html: A.icon("doc") + "<span>" + A.escapeHtml(A.t("copy_order_text")) + "</span>" });
+    copyBtn.addEventListener("click", () => copyOrderText(message));
+
+    const doneBtn = A.el("button", { type: "button", class: "btn btn-gold btn-block", html: A.icon("check") + "<span>" + A.escapeHtml(A.t("order_sent_clear_cart")) + "</span>" });
+    doneBtn.addEventListener("click", () => {
+      window.AdamCart.clear();
+      A.closeAllDrawers();
+      render();
+    });
+
+    const panel = A.el("div", { class: "order-send-followup" },
+      A.el("strong", { text: A.t("order_opened_whatsapp") }),
+      A.el("p", { text: A.t("order_keep_cart_hint") }),
+      copyBtn,
+      doneBtn
+    );
+
+    const send = body.querySelector("[data-checkout-send]");
+    if (send) send.after(panel);
+    else body.append(panel);
+  }
 
   function submit() {
     const body = document.getElementById("checkoutBody");
@@ -177,15 +254,15 @@
       currentLocation: A.sanitizeInput(form.currentLocation, { maxLen: 160 }),
       notes: A.sanitizeInput(form.notes, { maxLen: MAXLEN.notes, multiline: true })
     };
-    A.openExternal(A.whatsappLink(buildMessage(clean)));
-    window.AdamCart.clear();
-    A.closeAllDrawers();
-    render();
+    const message = buildMessage(clean);
+    A.openExternal(A.whatsappLink(message));
+    showSendFollowup(message);
   }
 
   function buildMessage(clean) {
     const items = window.AdamCart.getItems();
     const sub = window.AdamCart.subtotal();
+    const discount = window.AdamCart.promoDiscount ? window.AdamCart.promoDiscount() : 0;
     const fee = deliveryFee();
     const isDelivery = clean.type === "delivery";
     const L = [];
@@ -214,8 +291,9 @@
     });
     L.push("");
     L.push(line);
+    if (discount) L.push(A.t("promo_discount") + ": -" + A.money(discount));
     L.push(A.t("wa_subtotal") + ": " + A.money(sub));
-    L.push(A.t("wa_delivery") + ": " + (fee ? A.money(fee) : (A.lang() === "he" ? "ללא" : "بدون")));
+    L.push(A.t("wa_delivery") + ": " + (isDelivery && sub >= FREE_DELIVERY_MIN ? A.t("free_delivery_label") : (fee ? A.money(fee) : (A.lang() === "he" ? "ללא" : "بدون"))));
     L.push("💰 " + A.t("wa_total") + ": " + A.money(sub + fee));
     if (isDelivery && clean.notes) { L.push(""); L.push("📝 " + A.t("wa_notes") + ": " + clean.notes); }
     L.push(line);
