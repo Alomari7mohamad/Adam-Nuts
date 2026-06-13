@@ -336,7 +336,7 @@ h1, h2, h3, h4, .display { font-family: var(--font-head); font-weight: 700; line
   box-shadow: 0 8px 20px rgba(59,34,18,.14);
   display: grid;
   place-items: center;
-  transform: translateY(-90%);
+  transform: translateY(-50%);
   transition: opacity .18s, transform .18s var(--ease);
 }
 .cats-arrow::before {
