@@ -288,8 +288,36 @@
     showSendFollowup(message);
   }
 
+  function compactInvoice(invoice) {
+    return {
+      v: 3,
+      l: invoice.lang,
+      d: new Date(invoice.createdAt).getTime(),
+      c: invoice.customer,
+      o: invoice.orderType === "delivery" ? 1 : 0,
+      a: invoice.orderType === "delivery" ? invoice.location : "",
+      g: invoice.deliveryArea,
+      x: invoice.notes,
+      k: invoice.discount,
+      f: invoice.delivery,
+      t: invoice.total,
+      i: invoice.items.map(item => [
+        item.id,
+        item.weight,
+        item.qty,
+        item.userNotes || (!item.components.length ? item.notes : ""),
+        item.line,
+        item.components.map(component => [
+          component.id || "",
+          component.weight == null ? "" : component.weight,
+          component.qty == null ? "" : component.qty
+        ])
+      ])
+    };
+  }
+
   function encodeInvoice(invoice) {
-    const bytes = new TextEncoder().encode(JSON.stringify(invoice));
+    const bytes = new TextEncoder().encode(JSON.stringify(compactInvoice(invoice)));
     let binary = "";
     bytes.forEach(byte => { binary += String.fromCharCode(byte); });
     return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
@@ -301,7 +329,7 @@
         ? location.href
         : DATA.STORE.menuUrl;
       const url = new URL("invoice.html", liveBase);
-      url.hash = "invoice=" + encodeInvoice(invoice);
+      url.hash = "i=" + encodeInvoice(invoice);
       return url.href;
     } catch (_) {
       return "";
@@ -314,12 +342,12 @@
     const discount = window.AdamCart.promoDiscount ? window.AdamCart.promoDiscount() : 0;
     const productsTotal = window.AdamCart.subtotal();
     const delivery = deliveryFee();
-    const beforeTax = productsTotal + delivery;
-    const tax = Math.round(beforeTax * 18) / 100;
-    const total = Math.round((beforeTax + tax) * 100) / 100;
+    const total = Math.round((productsTotal + delivery) * 100) / 100;
+    const beforeTax = Math.round((total / 1.18) * 100) / 100;
+    const tax = Math.round((total - beforeTax) * 100) / 100;
     const lang = A.lang() === "he" ? "he" : "ar";
     const invoice = {
-      version: 1,
+      version: 2,
       lang,
       number: String(Date.now()).slice(-8),
       createdAt: new Date().toISOString(),
@@ -349,6 +377,7 @@
         components: (components || []).map(component => {
           const item = A.productById(component.id);
           return {
+            id: component.id,
             name: item ? A.nameOf(item.name) : String(component.name || ""),
             weight: component.weight != null && Number.isFinite(+component.weight) ? +component.weight : null,
             qty: component.qty != null && Number.isFinite(+component.qty) ? +component.qty : null

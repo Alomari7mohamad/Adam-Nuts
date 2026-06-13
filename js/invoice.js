@@ -12,6 +12,7 @@
       store: "محمص آدم",
       invoice: "رقم الفاتورة",
       date: "التاريخ",
+      time: "الوقت",
       customer: "اسم الزبون",
       orderType: "نوع الطلب",
       pickup: "استلام من المحل",
@@ -25,7 +26,7 @@
       weight: "الوزن",
       piece: "قطعة",
       notes: "ملاحظات",
-      subtotal: "قيمة الطلب",
+      subtotal: "قيمة الطلب بدون الضريبة",
       discount: "الخصم",
       deliveryFee: "التوصيل",
       beforeTax: "المبلغ قبل الضريبة",
@@ -41,6 +42,7 @@
       store: "פיצוחי אדם",
       invoice: "מספר חשבונית",
       date: "תאריך",
+      time: "שעה",
       customer: "שם הלקוח",
       orderType: "סוג הזמנה",
       pickup: "איסוף מהחנות",
@@ -54,7 +56,7 @@
       weight: "משקל",
       piece: "יחידה",
       notes: "הערות",
-      subtotal: "סכום ההזמנה",
+      subtotal: "סכום ההזמנה ללא מע״מ",
       discount: "הנחה",
       deliveryFee: "משלוח",
       beforeTax: "סכום לפני מע״מ",
@@ -112,6 +114,52 @@
     return element;
   }
 
+  function expandCompact(data) {
+    if (!data || data.v !== 3 || !Array.isArray(data.i)) return data;
+    const lang = data.l === "he" ? "he" : "ar";
+    const products = window.AdamData?.PRODUCTS || [];
+    const findProduct = id => products.find(product => product.id === id);
+    const localName = value => value ? (value[lang] || value.ar || value.he || "") : "";
+    const createdAt = new Date(Number(data.d) || Date.now());
+    return {
+      version: 3,
+      lang,
+      number: String(createdAt.getTime()).slice(-8),
+      createdAt: createdAt.toISOString(),
+      customer: String(data.c || ""),
+      orderType: data.o ? "delivery" : "pickup",
+      location: String(data.a || ""),
+      deliveryArea: String(data.g || ""),
+      notes: String(data.x || ""),
+      discount: Number(data.k) || 0,
+      delivery: Number(data.f) || 0,
+      total: Number(data.t) || 0,
+      items: data.i.map(raw => {
+        const product = findProduct(raw[0]);
+        const components = Array.isArray(raw[5]) ? raw[5].map(component => {
+          const componentProduct = findProduct(component[0]);
+          return {
+            name: localName(componentProduct?.name),
+            weight: component[1] === "" ? null : Number(component[1]),
+            qty: component[2] === "" ? null : Number(component[2])
+          };
+        }) : [];
+        return {
+          id: raw[0],
+          name: localName(product?.name),
+          unit: product?.unit || "piece",
+          fixedWeight: localName(product?.fixedWeight),
+          weight: Number(raw[1]) || 1000,
+          qty: Number(raw[2]) || 1,
+          notes: components.length ? "" : String(raw[3] || ""),
+          userNotes: components.length ? String(raw[3] || "") : "",
+          line: Number(raw[4]) || 0,
+          components
+        };
+      })
+    };
+  }
+
   function render(invoice) {
     const lang = invoice.lang === "he" ? "he" : "ar";
     const t = TEXT[lang];
@@ -134,9 +182,18 @@
 
     const meta = node("section", "meta");
     const date = new Date(invoice.createdAt);
+    const locale = lang === "he" ? "he-IL" : "ar";
+    const validDate = !Number.isNaN(date.getTime());
+    const dateText = validDate
+      ? new Intl.DateTimeFormat(locale, { weekday: "long", day: "2-digit", month: "long", year: "numeric" }).format(date)
+      : "";
+    const timeText = validDate
+      ? new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit", hour12: false }).format(date)
+      : "";
     meta.append(
       metaRow(t.invoice, invoice.number || ""),
-      metaRow(t.date, Number.isNaN(date.getTime()) ? "" : date.toLocaleString(lang === "he" ? "he-IL" : "ar", { dateStyle: "short", timeStyle: "short" })),
+      metaRow(t.date, dateText),
+      metaRow(t.time, timeText),
       metaRow(t.customer, invoice.customer || ""),
       metaRow(t.orderType, invoice.orderType === "delivery" ? t.delivery : t.pickup)
     );
@@ -173,13 +230,17 @@
     });
 
     const totals = node("section", "totals");
-    totals.append(row(t.subtotal, money(invoice.subtotal)));
+    const grossTotal = Number(invoice.version) >= 2
+      ? Number(invoice.total)
+      : Number(invoice.beforeTax || invoice.total || 0);
+    const beforeTax = Math.round((grossTotal / 1.18) * 100) / 100;
+    const tax = Math.round((grossTotal - beforeTax) * 100) / 100;
     if (Number(invoice.discount) > 0) totals.append(row(t.discount, "-" + money(invoice.discount)));
     if (invoice.orderType === "delivery") totals.append(row(t.deliveryFee, money(invoice.delivery)));
     totals.append(
-      row(t.beforeTax, money(invoice.beforeTax)),
-      row(t.tax, money(invoice.tax)),
-      row(t.total, money(invoice.total), "grand")
+      row(t.subtotal, money(beforeTax)),
+      row(t.tax, money(tax)),
+      row(t.total, money(grossTotal), "grand")
     );
 
     const receiptParts = [
@@ -197,14 +258,16 @@
   }
 
   function load() {
-    const hash = location.hash.startsWith("#invoice=") ? location.hash.slice(9) : "";
+    const hash = location.hash.startsWith("#i=")
+      ? location.hash.slice(3)
+      : (location.hash.startsWith("#invoice=") ? location.hash.slice(9) : "");
     if (hash) {
       try {
         const normalized = hash.replace(/-/g, "+").replace(/_/g, "/");
         const padded = normalized + "=".repeat((4 - normalized.length % 4) % 4);
         const binary = atob(padded);
         const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
-        const invoice = JSON.parse(new TextDecoder().decode(bytes));
+        const invoice = expandCompact(JSON.parse(new TextDecoder().decode(bytes)));
         if (invoice && Array.isArray(invoice.items) && invoice.items.length) {
           try { localStorage.setItem(KEY, JSON.stringify(invoice)); } catch (_) {}
           return invoice;
