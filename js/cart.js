@@ -111,7 +111,15 @@
   }
 
   /* ---------- Rendering ---------- */
+  function componentsWeight(components) {
+    return (components || []).reduce((sum, component) =>
+      component.weight != null && Number.isFinite(+component.weight) ? sum + +component.weight : sum, 0);
+  }
   function weightLabel(it, p) {
+    if (p.customMix) {
+      const totalWeight = componentsWeight(it.components);
+      if (totalWeight > 0) return weightText(totalWeight);
+    }
     if (p.fixedWeight) return A.nameOf(p.fixedWeight);
     if (p.unit !== "kg") return A.t("per_piece");
     return it.weight >= 1000 ? (A.lang() === "he" ? '1 ק"ג' : "1 كيلو")
@@ -140,7 +148,7 @@
     if (foot) foot.classList.remove("hidden");
 
     getItems().forEach(({ product: p, weight, qty, notes, userNotes, customPrice, components, line }) => {
-      const it = { id: p.id, weight, notes };
+      const it = { id: p.id, weight, notes, components };
       const key = keyOf(it);
       const promo = promoFor(p);
 

@@ -57,6 +57,22 @@
     return A.money(fee);
   }
 
+  function componentsWeight(components) {
+    return (components || []).reduce((sum, component) =>
+      component.weight != null && Number.isFinite(+component.weight) ? sum + +component.weight : sum, 0);
+  }
+
+  function orderWeight(product, weight, components, shortUnit) {
+    const selectedWeight = product.customMix ? componentsWeight(components) : 0;
+    const value = selectedWeight || weight;
+    if (product.unit !== "kg") return A.lang() === "he" ? "יחידה" : "قطعة";
+    if (value >= 1000) {
+      const kg = value / 1000;
+      return A.fmtNum(kg) + (shortUnit ? "kg" : (A.lang() === "he" ? ' ק"ג' : " كيلو"));
+    }
+    return value + (shortUnit ? "g" : (A.lang() === "he" ? " גרם" : " غرام"));
+  }
+
   /* ---------- Render form ---------- */
   function render() {
     const body = document.getElementById("checkoutBody");
@@ -77,10 +93,8 @@
       A.el("div", { class: "section-title", style: "font-size:16px;margin-bottom:10px" },
         A.el("span", { text: A.t("order_summary") }))
     );
-    items.forEach(({ product: p, weight, qty, line }) => {
-      const wl = p.unit === "kg"
-        ? (weight >= 1000 ? (A.lang() === "he" ? '1 ק"ג' : "1 كيلو") : weight + (A.lang() === "he" ? " גרם" : " غ"))
-        : "×" + qty;
+    items.forEach(({ product: p, weight, qty, components, line }) => {
+      const wl = p.unit === "kg" ? orderWeight(p, weight, components, false) : "×" + qty;
       summary.append(A.el("div", { class: "totals" },
         A.el("div", { class: "row" },
           A.el("span", { text: A.nameOf(p.name) + " · " + wl + (p.unit === "kg" ? " ×" + qty : "") }),
@@ -415,9 +429,7 @@
     L.push("");
     L.push("🛒 " + A.t("wa_products") + ":");
     items.forEach(({ product: p, weight, qty, notes, userNotes, components, line: lp }, i) => {
-      const wl = p.unit === "kg"
-        ? (weight >= 1000 ? "1kg" : weight + "g")
-        : (A.lang() === "he" ? "יחידה" : "قطعة");
+      const wl = orderWeight(p, weight, components, true);
       L.push("  " + (i + 1) + ") " + A.nameOf(p.name));
       L.push("       " + wl + " × " + qty + "  =  " + A.money(lp));
       if (Array.isArray(components) && components.length) {

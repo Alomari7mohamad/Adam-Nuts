@@ -86,9 +86,12 @@
   function weightText(item, lang) {
     if (item.fixedWeight) return item.fixedWeight;
     if (item.unit !== "kg") return TEXT[lang].piece;
-    return Number(item.weight) >= 1000
-      ? (lang === "he" ? '1 ק"ג' : "1 كيلو")
-      : Number(item.weight) + (lang === "he" ? " גרם" : " غرام");
+    const componentsWeight = (item.components || []).reduce((sum, component) =>
+      component.weight != null && Number.isFinite(Number(component.weight)) ? sum + Number(component.weight) : sum, 0);
+    const weight = componentsWeight || Number(item.weight);
+    return weight >= 1000
+      ? (weight / 1000).toLocaleString("en-US", { maximumFractionDigits: 2 }) + (lang === "he" ? ' ק"ג' : " كيلو")
+      : weight + (lang === "he" ? " גרם" : " غرام");
   }
 
   function componentText(component, lang) {
