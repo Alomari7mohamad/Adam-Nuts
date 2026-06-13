@@ -274,7 +274,7 @@
     else body.append(panel);
   }
 
-  function submit() {
+  async function submit() {
     const body = document.getElementById("checkoutBody");
     const r = body._refs;
     let ok = validateField(r.nameField);
@@ -286,7 +286,9 @@
     if (!ok) { A.toast(A.t("required"), "info"); return; }
     if (!window.AdamCart.getItems().length) return;
     if (busy) return;
-    busy = true; setTimeout(() => { busy = false; }, 2000);
+    busy = true; setTimeout(() => { busy = false; }, 10000);
+    const whatsappWindow = window.open("about:blank", "_blank");
+    if (whatsappWindow) whatsappWindow.opener = null;
 
     // Authoritative sanitisation pass before the data leaves the app.
     const clean = {
@@ -297,8 +299,15 @@
       notes: A.sanitizeInput(form.notes, { maxLen: MAXLEN.notes, multiline: true })
     };
     const invoice = saveInvoice(clean);
-    const message = buildMessage(clean, invoiceLink(invoice));
-    A.openExternal(A.whatsappLink(message));
+    const longPrintUrl = invoiceLink(invoice);
+    const printUrl = await shortenUrl(longPrintUrl);
+    const message = buildMessage(clean, printUrl);
+    const whatsappUrl = A.whatsappLink(message);
+    if (whatsappWindow && !whatsappWindow.closed) {
+      whatsappWindow.location.replace(whatsappUrl);
+    } else {
+      A.openExternal(whatsappUrl);
+    }
     showSendFollowup(message);
   }
 
@@ -348,6 +357,55 @@
     } catch (_) {
       return "";
     }
+  }
+
+  async function shortenUrl(longUrl) {
+    if (!longUrl || !/^https?:\/\//i.test(longUrl)) return longUrl || "";
+
+    const controller = typeof AbortController === "function" ? new AbortController() : null;
+    const timeout = controller ? setTimeout(() => controller.abort(), 3500) : null;
+
+    try {
+      const response = await fetch(
+        "https://is.gd/create.php?format=simple&url=" + encodeURIComponent(longUrl),
+        controller ? { signal: controller.signal } : undefined
+      );
+      if (!response.ok) throw new Error("URL shortening failed");
+
+      const shortUrl = (await response.text()).trim();
+      return /^https:\/\/is\.gd\/[A-Za-z0-9_-]+$/i.test(shortUrl) ? shortUrl : longUrl;
+    } catch (_) {
+      return shortenUrlWithJsonp(longUrl);
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  function shortenUrlWithJsonp(longUrl) {
+    return new Promise(resolve => {
+      const callbackName = "adamInvoiceShortener_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+      const script = document.createElement("script");
+      let finished = false;
+
+      const finish = value => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timeout);
+        script.remove();
+        try { delete window[callbackName]; } catch (_) { window[callbackName] = undefined; }
+        resolve(value);
+      };
+
+      const timeout = setTimeout(() => finish(longUrl), 5000);
+      window[callbackName] = result => {
+        const shortUrl = result && typeof result.shorturl === "string" ? result.shorturl.trim() : "";
+        finish(/^https:\/\/is\.gd\/[A-Za-z0-9_-]+$/i.test(shortUrl) ? shortUrl : longUrl);
+      };
+      script.onerror = () => finish(longUrl);
+      script.src = "https://is.gd/create.php?format=json&callback=" +
+        encodeURIComponent(callbackName) + "&url=" + encodeURIComponent(longUrl);
+      document.head.append(script);
+    });
   }
 
   function saveInvoice(clean) {
