@@ -53,6 +53,9 @@
   function priceHtml(value) {
     return hasPrice(value) ? '<span class="cur">₪</span>' + A.escapeHtml(A.fmtNum(value)) : "";
   }
+  function isAvailable(p) {
+    return !p || p.available !== false;
+  }
   function promoFor(p) {
     return (DATA.PROMOS || []).find(promo => promo.ids.includes(p.id));
   }
@@ -111,6 +114,7 @@
   function card(p) {
     const isKg = p.unit === "kg";
     const defaultW = p.cat === "spices" ? 100 : 1000;
+    const available = isAvailable(p);
 
     const img = A.el("img", { src: p.img, alt: A.nameOf(p.name), loading: "lazy", decoding: "async" });
     const media = A.el("div", { class: "pc-media", role: "button", tabindex: "0", "aria-label": A.t("details") }, img);
@@ -161,8 +165,8 @@
     paintPrice(defaultW);
     const priceRow = A.el("div", { class: "pc-price-row" }, priceEl, oldEl, unitEl);
 
-    const addBtn = A.el("button", { class: "add-btn", html: A.icon("cart") + "<span>" + A.escapeHtml(A.t("add_to_cart")) + "</span>" });
-    addBtn.addEventListener("click", () => openQuickView(p));
+    const addBtn = A.el("button", { class: "add-btn", html: A.icon("cart") + "<span>" + A.escapeHtml(A.t("add_to_cart")) + "</span>", disabled: available ? null : "disabled" });
+    addBtn.addEventListener("click", () => { if (available) openQuickView(p); });
 
     const nameEl = A.el("button", { class: "pc-name", text: A.nameOf(p.name) });
     nameEl.addEventListener("click", () => openQuickView(p));
@@ -175,7 +179,7 @@
       A.el("div", { class: "pc-actions" }, addBtn)
     );
 
-    return A.el("article", { class: "product-card", dataset: { id: p.id } }, media, body);
+    return A.el("article", { class: "product-card" + (available ? "" : " unavailable"), dataset: { id: p.id } }, media, body);
   }
 
   /* ---------- Quick-view detail ---------- */
@@ -208,6 +212,7 @@
     opts = opts || {};
     if (p.customMix) { openCustomMix(p, opts); return; }
     if (p.offerBundle) { openOfferBundle(p, opts); return; }
+    const available = isAvailable(p);
     buildQuickView();
     const body = document.getElementById("qvBody");
     const isKg = p.unit === "kg";
@@ -248,8 +253,9 @@
     const notes = A.el("textarea", { class: "product-notes", maxlength: "180", placeholder: A.t("product_notes_ph"), "aria-label": A.t("product_notes") });
     if (opts.notes) notes.value = opts.notes;
 
-    const add = A.el("button", { class: "btn btn-gold", style: "flex:1", html: A.icon("cart") + "<span>" + A.escapeHtml(opts.replaceKey ? A.t("save_changes") : A.t("add_to_cart")) + "</span>" });
+    const add = A.el("button", { class: "btn btn-gold", style: "flex:1", disabled: available ? null : "disabled", html: A.icon("cart") + "<span>" + A.escapeHtml(opts.replaceKey ? A.t("save_changes") : A.t("add_to_cart")) + "</span>" });
     add.addEventListener("click", () => {
+      if (!available) return;
       const note = A.sanitizeInput(notes.value, { maxLen: 180, multiline: true });
       if (opts.replaceKey) window.AdamCart.remove(opts.replaceKey);
       window.AdamCart.add(p.id, isKg ? weightPick.value : 1000, 1, note);
@@ -278,6 +284,7 @@
 
   function openOfferBundle(p, opts) {
     opts = opts || {};
+    const available = isAvailable(p);
     buildQuickView();
     const body = document.getElementById("qvBody");
     body.textContent = "";
@@ -303,20 +310,25 @@
     function sync() {
       const total = totalQty();
       countEl.textContent = A.t("offer_selected_count").replace("{count}", total).replace("{qty}", promo.qty);
-      add.disabled = total !== promo.qty;
+      add.disabled = !available || total !== promo.qty;
       list.querySelectorAll(".mix-card").forEach(card => {
         const qty = selected.get(card.dataset.productId) || 0;
+        const item = DATA.PRODUCTS.find(x => x.id === card.dataset.productId);
+        const itemAvailable = isAvailable(item);
         card.classList.toggle("active", qty > 0);
+        card.classList.toggle("unavailable", !itemAvailable);
         card.setAttribute("aria-pressed", String(qty > 0));
         const qtyEl = card.querySelector(".offer-card-qty");
         if (qtyEl) qtyEl.textContent = String(qty);
         const minus = card.querySelector("[data-offer-minus]");
         const plus = card.querySelector("[data-offer-plus]");
-        if (minus) minus.disabled = qty <= 0;
-        if (plus) plus.disabled = total >= promo.qty;
+        if (minus) minus.disabled = !itemAvailable || qty <= 0;
+        if (plus) plus.disabled = !itemAvailable || total >= promo.qty;
       });
     }
     function setQty(id, qty) {
+      const item = DATA.PRODUCTS.find(x => x.id === id);
+      if (!available || !isAvailable(item)) return;
       qty = Math.max(0, Math.min(promo.qty, qty));
       if (qty) selected.set(id, qty);
       else selected.delete(id);
@@ -335,6 +347,7 @@
         A.el("div", { class: "offer-card-controls" }, minus, qty, plus)
       );
       card.addEventListener("click", event => {
+        if (!available || !isAvailable(item)) return;
         if (event.target.closest(".offer-card-step")) return;
         const current = selected.get(item.id) || 0;
         if (current > 0) setQty(item.id, 0);
@@ -346,6 +359,7 @@
     });
 
     add.addEventListener("click", () => {
+      if (!available) return;
       if (totalQty() !== promo.qty) { A.toast(A.t("offer_must_choose").replace("{qty}", promo.qty), "info"); return; }
       const components = [];
       selected.forEach((qty, id) => {
@@ -374,6 +388,7 @@
 
   function openCustomMix(p, opts) {
     opts = opts || {};
+    const available = isAvailable(p);
     buildQuickView();
     const body = document.getElementById("qvBody");
     body.textContent = "";
@@ -397,7 +412,7 @@
       } else {
         priceEl.textContent = A.t("price_on_selection");
       }
-      add.disabled = total <= 0;
+      add.disabled = !available || total <= 0;
       return total;
     }
     const list = A.el("div", { class: "mix-builder" });
@@ -421,6 +436,7 @@
     }
 
     function openWeightDialog(item) {
+      if (!available || !isAvailable(item)) return;
       closeWeightDialog();
       activeId = item.id;
       const layer = A.el("div", { class: "mix-weight-layer" });
@@ -485,7 +501,8 @@
     choices.forEach(item => {
       const card = A.el("button", {
         type: "button",
-        class: "mix-card",
+        class: "mix-card" + (isAvailable(item) ? "" : " unavailable"),
+        disabled: isAvailable(item) ? null : "disabled",
         "aria-pressed": "false",
         dataset: { productId: item.id }
       },
@@ -503,6 +520,7 @@
     notes.value = cleanEditNotes();
     const add = A.el("button", { class: "btn btn-gold btn-block", disabled: "disabled", html: A.icon("cart") + "<span>" + A.escapeHtml(opts.replaceKey ? A.t("save_changes") : A.t("add_to_cart")) + "</span>" });
     add.addEventListener("click", () => {
+      if (!available) return;
       const components = [];
       selected.forEach((weight, id) => {
         const item = DATA.PRODUCTS.find(x => x.id === id);

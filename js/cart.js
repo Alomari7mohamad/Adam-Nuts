@@ -37,6 +37,8 @@
 
   /* ---------- Mutations ---------- */
   function add(id, weight, qty, notes, meta) {
+    const product = A.productById(id);
+    if (product && product.available === false) return;
     meta = meta || {};
     notes = A.sanitizeInput(notes || "", { maxLen: 180, multiline: true });
     const customPrice = meta.customPrice != null && Number.isFinite(+meta.customPrice) ? +meta.customPrice : null;

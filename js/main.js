@@ -236,8 +236,7 @@
         else if (target === "catalog") {
           e.preventDefault();
           closeAllDrawers();
-          const cats = document.getElementById("cats");
-          if (cats) cats.scrollIntoView({ behavior: "smooth", block: "start" });
+          window.location.href = "index.html";
         }
         else if (target === "account") { e.preventDefault(); openDrawer("accountDrawer"); }
       });

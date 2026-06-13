@@ -7,15 +7,39 @@
   const DATA = window.AdamData;
 
   const FREE_DELIVERY_MIN = 300;
-  const form = { name: "", type: "pickup", location: "", currentLocation: "", notes: "" };
+  const INVOICE_KEY = "adam_last_invoice";
+  const form = { name: "", type: "pickup", location: "", currentLocation: "", currentCoords: null, deliveryArea: "", notes: "" };
 
   /* ---------- Delivery fee derivation ---------- */
   function normalize(s) {
     return String(s).toLowerCase().replace(/[ً-ٟ]/g, "").trim();
   }
+  function areaFromCoords(coords) {
+    if (!coords || !Number.isFinite(coords.lat) || !Number.isFinite(coords.lng)) return "";
+    const accuracy = Math.min(Math.max(Number(coords.accuracy) || 0, 75), 350);
+    const latPad = accuracy / 111320;
+    const lngPad = accuracy / (111320 * Math.cos(coords.lat * Math.PI / 180));
+    const area = (DATA.DELIVERY.geoAreas || []).find(({ bounds }) =>
+      coords.lat >= bounds.south - latPad &&
+      coords.lat <= bounds.north + latPad &&
+      coords.lng >= bounds.west - lngPad &&
+      coords.lng <= bounds.east + lngPad
+    );
+    return area ? area.id : "";
+  }
+  function areaLabel(id) {
+    const labels = {
+      sandala: { ar: "صندلة", he: "סנדלה" },
+      muqeible: { ar: "مقيبلة", he: "מוקייבלה" }
+    };
+    return labels[id] ? labels[id][A.lang()] : "";
+  }
   function deliveryFee() {
     if (form.type === "pickup") return 0;
     if (window.AdamCart.subtotal() >= FREE_DELIVERY_MIN) return 0;
+    if (form.currentCoords) {
+      return areaFromCoords(form.currentCoords) ? DATA.DELIVERY.near.fee : DATA.DELIVERY.far.fee;
+    }
     const loc = normalize(form.location);
     if (!loc) return DATA.DELIVERY.far.fee;
     const near = DATA.DELIVERY.near.places.some(p => loc.includes(normalize(p)));
@@ -92,7 +116,7 @@
     notesField.input.value = form.notes;
     notesField.input.addEventListener("input", () => { form.notes = notesField.input.value; });
     const currentLocationBox = A.el("div", { class: "current-location-box" },
-      A.el("div", { class: "current-location-text", text: form.currentLocation ? A.t("current_location_ready") + ": " + form.currentLocation : A.t("current_location_waiting") }),
+      A.el("div", { class: "current-location-text", text: form.currentLocation ? A.t("current_location_ready") + (form.deliveryArea ? ": " + areaLabel(form.deliveryArea) : "") : A.t("current_location_waiting") }),
       A.el("button", { type: "button", class: "btn btn-outline btn-block use-location", html: A.icon("location") + "<span>" + A.escapeHtml(A.t("use_current_location")) + "</span>" })
     );
     currentLocationBox.querySelector("button").addEventListener("click", requestCurrentLocation);
@@ -213,6 +237,9 @@
     const copyBtn = A.el("button", { type: "button", class: "btn btn-outline btn-block order-copy-btn", html: A.icon("doc") + "<span>" + A.escapeHtml(A.t("copy_order_text")) + "</span>" });
     copyBtn.addEventListener("click", () => copyOrderText(message));
 
+    const printLabel = A.lang() === "he" ? "הדפסת חשבונית" : "طباعة الفاتورة";
+    const printBtn = A.el("a", { href: "invoice.html", target: "_blank", rel: "noopener", class: "btn btn-outline btn-block", html: A.icon("doc") + "<span>" + A.escapeHtml(printLabel) + "</span>" });
+
     const doneBtn = A.el("button", { type: "button", class: "btn btn-gold btn-block", html: A.icon("check") + "<span>" + A.escapeHtml(A.t("order_sent_clear_cart")) + "</span>" });
     doneBtn.addEventListener("click", () => {
       window.AdamCart.clear();
@@ -223,6 +250,7 @@
     const panel = A.el("div", { class: "order-send-followup" },
       A.el("strong", { text: A.t("order_opened_whatsapp") }),
       A.el("p", { text: A.t("order_keep_cart_hint") }),
+      printBtn,
       copyBtn,
       doneBtn
     );
@@ -254,12 +282,85 @@
       currentLocation: A.sanitizeInput(form.currentLocation, { maxLen: 160 }),
       notes: A.sanitizeInput(form.notes, { maxLen: MAXLEN.notes, multiline: true })
     };
-    const message = buildMessage(clean);
+    const invoice = saveInvoice(clean);
+    const message = buildMessage(clean, invoiceLink(invoice));
     A.openExternal(A.whatsappLink(message));
     showSendFollowup(message);
   }
 
-  function buildMessage(clean) {
+  function encodeInvoice(invoice) {
+    const bytes = new TextEncoder().encode(JSON.stringify(invoice));
+    let binary = "";
+    bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  }
+
+  function invoiceLink(invoice) {
+    try {
+      const liveBase = /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)
+        ? location.href
+        : DATA.STORE.menuUrl;
+      const url = new URL("invoice.html", liveBase);
+      url.hash = "invoice=" + encodeInvoice(invoice);
+      return url.href;
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function saveInvoice(clean) {
+    const items = window.AdamCart.getItems();
+    const subtotal = items.reduce((sum, item) => sum + Number(item.line || 0), 0);
+    const discount = window.AdamCart.promoDiscount ? window.AdamCart.promoDiscount() : 0;
+    const productsTotal = window.AdamCart.subtotal();
+    const delivery = deliveryFee();
+    const beforeTax = productsTotal + delivery;
+    const tax = Math.round(beforeTax * 18) / 100;
+    const total = Math.round((beforeTax + tax) * 100) / 100;
+    const lang = A.lang() === "he" ? "he" : "ar";
+    const invoice = {
+      version: 1,
+      lang,
+      number: String(Date.now()).slice(-8),
+      createdAt: new Date().toISOString(),
+      customer: clean.name,
+      orderType: clean.type,
+      location: clean.location,
+      currentLocation: clean.currentLocation,
+      deliveryArea: form.deliveryArea || "",
+      notes: clean.notes,
+      subtotal,
+      discount,
+      delivery,
+      beforeTax,
+      taxRate: 18,
+      tax,
+      total,
+      items: items.map(({ product: p, weight, qty, notes, userNotes, components, line }) => ({
+        id: p.id,
+        name: A.nameOf(p.name),
+        unit: p.unit,
+        fixedWeight: p.fixedWeight ? A.nameOf(p.fixedWeight) : "",
+        weight,
+        qty,
+        notes,
+        userNotes,
+        line,
+        components: (components || []).map(component => {
+          const item = A.productById(component.id);
+          return {
+            name: item ? A.nameOf(item.name) : String(component.name || ""),
+            weight: component.weight != null && Number.isFinite(+component.weight) ? +component.weight : null,
+            qty: component.qty != null && Number.isFinite(+component.qty) ? +component.qty : null
+          };
+        })
+      }))
+    };
+    try { localStorage.setItem(INVOICE_KEY, JSON.stringify(invoice)); } catch (_) {}
+    return invoice;
+  }
+
+  function buildMessage(clean, printUrl) {
     const items = window.AdamCart.getItems();
     const sub = window.AdamCart.subtotal();
     const discount = window.AdamCart.promoDiscount ? window.AdamCart.promoDiscount() : 0;
@@ -276,18 +377,36 @@
     L.push("👤 " + A.t("wa_name") + ": " + clean.name);
     L.push("🧾 " + A.t("wa_type") + ": " + (isDelivery ? A.t("wa_delivery_type") : A.t("wa_pickup")));
     if (isDelivery) {
-      if (clean.currentLocation) L.push("📍 " + A.t("wa_current_location") + ": " + clean.currentLocation);
+      if (clean.currentLocation) {
+        const detectedArea = form.deliveryArea ? " (" + areaLabel(form.deliveryArea) + ")" : "";
+        L.push("📍 " + A.t("wa_current_location") + detectedArea + ": " + clean.currentLocation);
+      }
       L.push("📍 " + A.t("wa_location") + ": " + clean.location);
     }
     L.push("");
     L.push("🛒 " + A.t("wa_products") + ":");
-    items.forEach(({ product: p, weight, qty, notes, line: lp }, i) => {
+    items.forEach(({ product: p, weight, qty, notes, userNotes, components, line: lp }, i) => {
       const wl = p.unit === "kg"
         ? (weight >= 1000 ? "1kg" : weight + "g")
         : (A.lang() === "he" ? "יחידה" : "قطعة");
       L.push("  " + (i + 1) + ") " + A.nameOf(p.name));
       L.push("       " + wl + " × " + qty + "  =  " + A.money(lp));
-      if (notes) L.push("       " + A.t("wa_notes") + ": " + notes);
+      if (Array.isArray(components) && components.length) {
+        components.forEach(component => {
+          const item = A.productById(component.id);
+          const name = item ? A.nameOf(item.name) : component.name;
+          if (Number.isFinite(+component.weight)) {
+            const componentWeight = +component.weight >= 1000 ? "1kg" : +component.weight + "g";
+            L.push("       - " + name + ": " + componentWeight);
+          } else if (Number.isFinite(+component.qty)) {
+            L.push("       - " + name + " × " + component.qty);
+          }
+        });
+        if (userNotes) L.push("       " + A.t("wa_notes") + ": " + userNotes);
+      } else if (notes) {
+        L.push("       " + A.t("wa_notes") + ": " + notes);
+      }
+      if (i < items.length - 1) L.push("");
     });
     L.push("");
     L.push(line);
@@ -296,6 +415,11 @@
     L.push(A.t("wa_delivery") + ": " + (isDelivery && sub >= FREE_DELIVERY_MIN ? A.t("free_delivery_label") : (fee ? A.money(fee) : (A.lang() === "he" ? "ללא" : "بدون"))));
     L.push("💰 " + A.t("wa_total") + ": " + A.money(sub + fee));
     if (isDelivery && clean.notes) { L.push(""); L.push("📝 " + A.t("wa_notes") + ": " + clean.notes); }
+    if (printUrl) {
+      L.push("");
+      L.push("🧾 " + (A.lang() === "he" ? "קישור להדפסת חשבונית" : "رابط طباعة الفاتورة") + ":");
+      L.push(printUrl);
+    }
     L.push(line);
     return L.join("\n");
   }
@@ -308,6 +432,12 @@
     navigator.geolocation.getCurrentPosition(pos => {
       const lat = pos.coords.latitude.toFixed(6);
       const lng = pos.coords.longitude.toFixed(6);
+      form.currentCoords = {
+        lat: Number(lat),
+        lng: Number(lng),
+        accuracy: Number(pos.coords.accuracy) || 0
+      };
+      form.deliveryArea = areaFromCoords(form.currentCoords);
       form.currentLocation = "https://maps.google.com/?q=" + lat + "," + lng;
       render();
     }, () => {

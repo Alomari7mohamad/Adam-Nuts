@@ -1,0 +1,254 @@
+:root {
+  color-scheme: light;
+  font-family: Arial, "Tahoma", sans-serif;
+  color: #111;
+  background: #ececec;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  padding: 18px 0;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+.invoice-page {
+  width: 80mm;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.receipt {
+  width: 80mm;
+  min-height: 80mm;
+  padding: 4mm;
+  background: #fff;
+  box-shadow: 0 3px 18px rgba(0, 0, 0, .14);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.receipt-header {
+  text-align: center;
+}
+
+.receipt-logo {
+  display: block;
+  width: 27mm;
+  height: 27mm;
+  margin: 0 auto 2mm;
+  object-fit: contain;
+}
+
+.store-name {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.store-phone {
+  margin: 1mm 0 0;
+  font-size: 11px;
+  direction: ltr;
+}
+
+.rule {
+  margin: 3mm 0;
+  border: 0;
+  border-top: 1px dashed #111;
+}
+
+.meta {
+  display: grid;
+  gap: 1mm;
+}
+
+.meta-row,
+.total-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 3mm;
+}
+
+.meta-row span:last-child,
+.total-row strong:last-child,
+.money {
+  direction: ltr;
+  white-space: nowrap;
+}
+
+.items-title {
+  margin: 0 0 2mm;
+  text-align: center;
+  font-size: 13px;
+}
+
+.items-head,
+.item-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 12mm 17mm;
+  gap: 2mm;
+  align-items: start;
+}
+
+.items-head {
+  padding-bottom: 1.5mm;
+  border-bottom: 1px solid #111;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.invoice-item {
+  padding: 2mm 0;
+  border-bottom: 1px dotted #777;
+}
+
+.item-name {
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.item-qty,
+.item-price {
+  text-align: center;
+}
+
+.item-price {
+  direction: ltr;
+  white-space: nowrap;
+}
+
+.item-detail,
+.item-component,
+.item-note {
+  margin-top: 1mm;
+  padding-inline-start: 2mm;
+  font-size: 9.5px;
+}
+
+.item-component::before {
+  content: "- ";
+}
+
+.item-note {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.totals {
+  display: grid;
+  gap: 1.5mm;
+}
+
+.total-row.grand {
+  margin-top: 1mm;
+  padding-top: 2mm;
+  border-top: 2px solid #111;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.receipt-footer {
+  margin: 4mm 0 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.invoice-empty {
+  min-height: 70mm;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.invoice-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.invoice-actions button,
+.invoice-actions a {
+  flex: 1;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #222;
+  background: #fff;
+  color: #111;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.invoice-actions button {
+  background: #111;
+  color: #fff;
+}
+
+@media (max-width: 340px) {
+  body {
+    padding: 0;
+  }
+
+  .receipt,
+  .invoice-page {
+    width: 100%;
+  }
+
+  .receipt {
+    box-shadow: none;
+  }
+
+  .invoice-actions {
+    padding: 10px;
+  }
+}
+
+@page {
+  size: 80mm 80mm;
+  margin: 0;
+}
+
+@media print {
+  :root,
+  body {
+    background: #fff;
+  }
+
+  body {
+    width: 80mm;
+    padding: 0;
+  }
+
+  .invoice-page,
+  .receipt {
+    width: 80mm;
+    max-width: 80mm;
+  }
+
+  .receipt {
+    min-height: 80mm;
+    box-shadow: none;
+  }
+
+  .invoice-actions {
+    display: none;
+  }
+}
