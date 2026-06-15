@@ -428,7 +428,7 @@
         '<button class="close-x" data-action="close-drawer">' + I("close") + '</button></div>' +
         '<div class="drawer-body">' +
           '<div class="qr-card">' +
-            '<div class="qr-frame"><img src="assets/images/qr-menu.svg" alt="QR" width="240" height="240" /></div>' +
+            '<div class="qr-frame"><img src="assets/images/qr-menu.jpg" alt="QR" width="240" height="240" /></div>' +
             '<div class="qr-store store-name"></div>' +
             '<p class="qr-hint" data-i18n="qr_hint"></p>' +
             '<a class="qr-url" href="' + DATA.STORE.menuUrl + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(DATA.STORE.menuUrl) + '</a>' +

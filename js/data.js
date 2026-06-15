@@ -26,7 +26,7 @@
     // 👉 The public URL the menu QR code points to. After deploying, set this to
     //    your live URL, then regenerate assets/images/qr-menu.svg with any free
     //    online QR generator (no build tools / Node required).
-    menuUrl: "https://adam-roastery.netlify.app",
+    menuUrl: "https://adam-premium-nuts.shop",
     developer: { name: "O&H Tech", url: "https://oh-tech.co" }
   };
 
