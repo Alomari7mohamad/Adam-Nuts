@@ -1086,6 +1086,19 @@ body:has(.drawer.bottom-sheet.show) .bottom-nav { z-index: 110; }
 .order-send-followup .btn {
   min-height: 44px;
 }
+.order-send-followup .btn-outline {
+  color: var(--brown-700);
+  border-color: rgba(91, 55, 32, .28);
+  background: rgba(255, 255, 255, .58);
+}
+.order-send-followup .btn-outline:hover {
+  color: var(--brown-900);
+  border-color: var(--gold-dark);
+  background: rgba(255, 255, 255, .9);
+}
+.order-send-followup .btn-outline svg {
+  color: currentColor;
+}
 .order-copy-btn {
   color: var(--brown-700);
   border-color: var(--line);

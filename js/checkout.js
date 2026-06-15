@@ -252,7 +252,7 @@
     copyBtn.addEventListener("click", () => copyOrderText(message));
 
     const printLabel = A.lang() === "he" ? "הדפסת חשבונית" : "طباعة الفاتورة";
-    const printBtn = A.el("a", { href: "invoice.html", target: "_blank", rel: "noopener", class: "btn btn-outline btn-block", html: A.icon("doc") + "<span>" + A.escapeHtml(printLabel) + "</span>" });
+    const printBtn = A.el("a", { href: "invoice.html", target: "_blank", rel: "noopener", class: "btn btn-outline btn-block order-print-btn", html: A.icon("doc") + "<span>" + A.escapeHtml(printLabel) + "</span>" });
 
     const doneBtn = A.el("button", { type: "button", class: "btn btn-gold btn-block", html: A.icon("check") + "<span>" + A.escapeHtml(A.t("order_sent_clear_cart")) + "</span>" });
     doneBtn.addEventListener("click", () => {
