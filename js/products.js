@@ -11,7 +11,7 @@
 
   const FAV_KEY = "adam_favs";
   const LOGO = "assets/images/logo/logo.svg.png";
-  const state = { cat: "nuts", sub: "all", q: "" };
+  const state = { cat: "all", sub: "all", q: "" };
 
   /* ---------- Favourites (localStorage) ---------- */
   // Hardened read: only keep string ids that map to a real product
@@ -808,7 +808,7 @@
   }
 
   function init() {
-    state.cat = "nuts";
+    state.cat = "all";
     state.sub = "all";
     state.q = "";
     buildQuickView();

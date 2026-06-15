@@ -301,7 +301,7 @@
     // Footer
     const footer = el("footer", { class: "site-footer" });
     footer.innerHTML =
-      '<div class="footer-badge"><img src="assets/images/logo/logo.svg.png" alt=""></div>' +
+      '<div class="footer-badge"><img src="assets/images/logo/profile.jpeg" alt=""></div>' +
       '<div class="footer-name store-name"></div>' +
       '<div class="footer-tag store-tag"></div>' +
       '<div class="footer-social">' +

@@ -106,7 +106,7 @@
       name: { ar: "كاجو محمّص فاخر", he: "קשיו קלוי משובח" },
       desc: { ar: "كاجو محمّص ذهبي بقوام كريمي ونكهة فاخرة.", he: "קשיו קלוי זהוב במרקם קרמי וטעם משובח." } },
     { id: "nuts-14", cat: "nuts", available: true, sub: "tree-nuts", unit: "kg", price: 70,  img: im("nuts","nuts-14.jpeg"), bestseller: true,
-      name: { ar: "لوز أمريكي فاخر", he: "שקדים אמריקאים משובחים" },
+      name: { ar: "لوز فاخر", he: "שקדים אמריקאים משובחים" },
       desc: { ar: "لوز أمريكي محمّص بحجمه الكبير وطعمه المقرمش الغني.", he: "שקדים אמריקאים קלויים, גדולים, פריכים וטעימים." } },
     { id: "nuts-15", cat: "nuts", available: true, sub: "tree-nuts", unit: "kg", price: 120, img: im("nuts","nuts-15.jpeg"),
       name: { ar: "مكاديميا محمّصة", he: "מקדמיה קלויה" },

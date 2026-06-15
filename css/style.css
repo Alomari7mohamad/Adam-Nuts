@@ -546,6 +546,7 @@ h1, h2, h3, h4, .display { font-family: var(--font-head); font-weight: 700; line
 .offer-banner {
   margin: 18px 16px;
   position: relative;
+  isolation: isolate;
   display: flex; align-items: center; gap: 14px;
   padding: 18px;
   border-radius: var(--radius-lg);
@@ -554,22 +555,79 @@ h1, h2, h3, h4, .display { font-family: var(--font-head); font-weight: 700; line
   overflow: hidden;
   border: 1px solid rgba(202,166,91,0.3);
   box-shadow: var(--shadow-md);
+  transition: transform .45s var(--ease), box-shadow .45s var(--ease), border-color .45s var(--ease);
+}
+.offer-banner::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -65%;
+  bottom: -65%;
+  width: 22%;
+  inset-inline-start: -35%;
+  background: linear-gradient(90deg, transparent, rgba(255,239,190,.22), transparent);
+  transform: skewX(-18deg);
+  animation: occasionShine 6s ease-in-out infinite;
 }
 .offer-banner::after {
-  content: ""; position: absolute; inset-inline-end: -30px; top: -30px;
-  width: 140px; height: 140px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(202,166,91,0.35), transparent 70%);
+  content: "✦  ✧  ✦";
+  position: absolute;
+  z-index: -1;
+  inset-inline-end: 3%;
+  top: 8px;
+  color: rgba(255,226,145,.38);
+  font-size: 18px;
+  letter-spacing: 12px;
+  white-space: nowrap;
+  animation: occasionSparkles 3.4s ease-in-out infinite;
 }
 .offer-ico {
   flex: 0 0 auto; width: 58px; height: 58px; border-radius: 16px;
   display: grid; place-items: center; color: var(--gold-light);
   background: rgba(202,166,91,0.14); border: 1px solid rgba(202,166,91,0.4);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+  animation: occasionGift 3.2s ease-in-out infinite;
+  transition: transform .4s var(--ease), background .4s var(--ease), box-shadow .4s var(--ease);
 }
-.offer-ico svg { width: 30px; height: 30px; }
+.offer-ico svg { width: 30px; height: 30px; transition: transform .4s var(--ease); }
 .offer-text { flex: 1; z-index: 1; }
-.offer-title { font-family: var(--font-head); color: var(--gold-light); font-size: 17px; margin-bottom: 3px; }
+.offer-title {
+  font-family: var(--font-head); color: var(--gold-light); font-size: 17px; margin-bottom: 3px;
+  text-shadow: 0 0 18px rgba(255,220,125,.12);
+}
 .offer-desc { font-size: 13px; opacity: 0.92; line-height: 1.4; }
-.offer-banner .btn { z-index: 1; }
+.offer-banner .btn {
+  z-index: 1;
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease), filter .35s var(--ease);
+}
+.occasion-fireworks {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.occasion-fireworks span {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  color: #f6d77d;
+  background: currentColor;
+  opacity: 0;
+  box-shadow:
+    0 -28px 0 -1px currentColor,
+    20px -20px 0 -1px currentColor,
+    28px 0 0 -1px currentColor,
+    20px 20px 0 -1px currentColor,
+    0 28px 0 -1px currentColor,
+    -20px 20px 0 -1px currentColor,
+    -28px 0 0 -1px currentColor,
+    -20px -20px 0 -1px currentColor;
+}
+.occasion-fireworks span:nth-child(1) { inset-inline-start: 20%; top: 44%; }
+.occasion-fireworks span:nth-child(2) { inset-inline-start: 52%; top: 30%; color: #fff0b8; }
+.occasion-fireworks span:nth-child(3) { inset-inline-start: 82%; top: 58%; color: #e9b94f; }
 
 /* ---------- Bottom nav ---------- */
 .bottom-nav {
@@ -1075,9 +1133,9 @@ body:has(.drawer.bottom-sheet.show) .bottom-nav { z-index: 110; }
   background: var(--brown-900); color: var(--cream-2);
   padding: 28px 20px; text-align: center;
 }
-.footer-badge { width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 50%; border: 2px solid var(--gold);
+.footer-badge { width: min(260px, 72vw); aspect-ratio: 16 / 7; margin: 0 auto 14px; border-radius: 8px; border: 2px solid var(--gold);
   display: grid; place-items: center; background: var(--brown-800); overflow: hidden; }
-.footer-badge img { width: 100%; }
+.footer-badge img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .footer-name { font-family: var(--font-head); color: var(--gold-light); font-size: 19px; margin-bottom: 4px; }
 .footer-tag { font-size: 13px; opacity: 0.8; margin-bottom: 16px; }
 .footer-links { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
