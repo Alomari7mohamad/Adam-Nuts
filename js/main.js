@@ -51,7 +51,11 @@
   /* ---------------- Utilities ---------------- */
   function lang() { return I18n.getLang(); }
   function t(k) { return I18n.t(k); }
-  function nameOf(obj) { return obj[lang()] || obj.ar; }
+  function nameOf(obj) {
+    if (!obj || typeof obj !== "object") return obj == null || obj === "null" ? "" : String(obj);
+    const value = obj[lang()] ?? obj.ar ?? "";
+    return value == null || value === "null" ? "" : String(value);
+  }
 
   // Escape any string before it touches the DOM as text content fallback
   function escapeHtml(s) {
@@ -120,7 +124,7 @@
     if (props) for (const k in props) {
       if (k === "class") n.className = props[k];
       else if (k === "html") n.innerHTML = props[k];       // ONLY for trusted icon strings
-      else if (k === "text") n.textContent = props[k];     // safe text
+      else if (k === "text") n.textContent = (props[k] == null || props[k] === "null") ? "" : props[k];     // safe text
       else if (k.startsWith("on") && typeof props[k] === "function") n.addEventListener(k.slice(2), props[k]);
       else if (k === "dataset") Object.assign(n.dataset, props[k]);
       else if (props[k] != null) n.setAttribute(k, props[k]);

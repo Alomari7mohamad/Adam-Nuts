@@ -96,8 +96,8 @@
     { id: "nuts-10", cat: "nuts", available: true, sub: "tree-nuts", unit: "kg", price: 70,  img: im("nuts","nuts-10.jpeg"), bestseller: true,
       name: { ar: "فستق حلبي فاخر", he: "פיסטוק חלבי משובח" },
       desc: { ar: "فستق حلبي فاخر محمّص ومملّح، ملكة المكسرات بطعمها الغني.", he: "פיסטוק חלבי משובח, קלוי ומלוח — מלכת הפיצוחים בטעם עשיר." } },
-    { id: "nuts-11", cat: "nuts", available: true, sub: "tree-nuts", unit: "kg", price: 35,  img: im("nuts","nuts-11.jpeg"),
-      name: { ar: "فستق عبّيدي", he: "פיסטוק עבידי" },
+    { id: "nuts-11", cat: "nuts", available: true, sub: "tree-nuts", unit: "kg", price: 45,  img: im("nuts","nuts-11.jpeg"),
+      name: { ar: "فستق عبّيدي", he: "בוטנים" },
       desc: { ar: "فستق عبّيدي محمّص بنكهته المميّزة وسعره الاقتصادي.", he: "פיסטוק עבידי קלוי בטעם מיוחד ובמחיר משתלם." } },
     { id: "nuts-12", cat: "nuts", available: true, sub: "tree-nuts", unit: "kg", price: 50,  img: im("nuts","nuts-12.jpeg"),
       name: { ar: "كابوكيم", he: "קבוקים" },
@@ -173,6 +173,9 @@
     { id: "dry-6", cat: "dried", available: true, unit: "kg", price: 60, img: im("dried","dried-6.jpeg"),
       name: { ar: "مشمش مجفّف", he: "משמש מיובש" },
       desc: { ar: "مشمش مجفّف بلونه الذهبي ونكهته الحلوة الحامضة.", he: "משמש מיובש בצבע זהוב ובטעם מתוק-חמצמץ." } },
+    { id: "dry-7", cat: "dried", available: true, unit: "kg", price: 60, img: im("dried","dried-7.jpg"),
+      name: { ar: "التوت البري", he: "חמוציות" },
+      desc: { ar: "توت بري مجفّف بنكهة حلوة حامضة، مناسب للتسالي والحلويات.", he: "חמוציות מיובשות בטעם מתוק-חמצמץ, מתאימות לנשנוש ולקינוחים." } },
 
     /* ---------------- SPICES (by weight) ---------------- */
     { id: "spc-1",  cat: "spices", available: true, sub: "ground", unit: "kg", price: 100, img: im("spices","spices-1.png"),

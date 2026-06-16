@@ -44,7 +44,8 @@
   function weightText(g) { return g >= 1000 ? "1 " + kgWord() : g + " " + gWord(); }
   function priceUnitText(p, isKg, weight) {
     if (isKg) return "/ " + weightText(weight);
-    if (p.fixedWeight) return "/ " + A.nameOf(p.fixedWeight);
+    const fixedWeight = p.fixedWeight ? A.nameOf(p.fixedWeight) : "";
+    if (fixedWeight) return "/ " + fixedWeight;
     return A.t("per_piece");
   }
   function hasPrice(value) {
@@ -179,7 +180,7 @@
       A.el("div", { class: "pc-actions" }, addBtn)
     );
 
-    return A.el("article", { class: "product-card" + (available ? "" : " unavailable"), dataset: { id: p.id } }, media, body);
+    return A.el("article", { class: "product-card product-cat-" + p.cat + (available ? "" : " unavailable"), dataset: { id: p.id } }, media, body);
   }
 
   /* ---------- Quick-view detail ---------- */
@@ -202,7 +203,7 @@
       A.el("img", { src, alt: alt || "" })
     );
     layer.addEventListener("click", event => {
-      if (event.target === layer || event.target.closest(".image-zoom-close")) layer.remove();
+      if (event.target === layer || event.target.tagName === "IMG" || event.target.closest(".image-zoom-close")) layer.remove();
     });
     document.body.append(layer);
     requestAnimationFrame(() => layer.classList.add("show"));
@@ -220,7 +221,7 @@
     body.textContent = "";
 
     const mediaImg = A.el("img", { src: p.img, alt: A.nameOf(p.name) });
-    const media = A.el("button", { type: "button", class: "qv-media qv-media-click", "aria-label": A.nameOf(p.name) }, mediaImg);
+    const media = A.el("button", { type: "button", class: "qv-media qv-media-click qv-cat-" + p.cat, "aria-label": A.nameOf(p.name) }, mediaImg);
     media.addEventListener("click", () => openImageZoom(p.img, A.nameOf(p.name)));
     const promo = promoFor(p);
     if (p.bestseller) media.append(A.el("span", { class: "badge badge-best qv-badge", html: A.icon("star") + "<span>" + A.escapeHtml(A.t("bestseller_badge")) + "</span>" }));

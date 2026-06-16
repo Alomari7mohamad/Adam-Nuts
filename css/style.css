@@ -416,8 +416,10 @@ h1, h2, h3, h4, .display { font-family: var(--font-head); font-weight: 700; line
   border-color: var(--line);
 }
 .pc-media { position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: var(--cream-2); }
-.pc-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease); }
-.product-card:hover .pc-media img { transform: scale(1.07); }
+.pc-media img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .5s var(--ease); }
+.product-card.product-cat-espresso .pc-media { background: linear-gradient(180deg, #fffdf8, var(--cream-2)); }
+.product-card.product-cat-espresso .pc-media img { object-fit: contain; }
+.product-card:hover .pc-media img { transform: scale(1.04); }
 .product-card.unavailable:hover .pc-media img { transform: none; }
 .pc-badges { position: absolute; top: 8px; inset-inline-start: 8px; display: flex; flex-direction: column; gap: 5px; }
 .badge {
@@ -1242,6 +1244,13 @@ html[dir="rtl"] .drawer.product-modal.show { transform: translate(-50%, -50%) sc
 .product-modal .drawer-body { text-align: center; }
 .product-modal .qv-media { max-height: 220px; margin-inline: auto; }
 .product-modal .qv-media img { width: 100%; height: 100%; object-fit: contain; object-position: center center; }
+.product-modal .qv-media.qv-cat-espresso {
+  height: min(42vh, 320px);
+  max-height: 320px;
+}
+.product-modal .qv-media.qv-cat-espresso img {
+  object-fit: contain;
+}
 .product-modal .qv-cat,
 .product-modal .qv-name,
 .product-modal .qv-desc,
@@ -1282,6 +1291,7 @@ html[dir="rtl"] .drawer.product-modal.show { transform: translate(-50%, -50%) sc
   box-shadow: var(--shadow-lg);
   transform: scale(.94);
   transition: transform .22s var(--ease);
+  cursor: zoom-out;
 }
 .image-zoom-layer.show img { transform: scale(1); }
 .image-zoom-close {
@@ -1341,6 +1351,10 @@ html[dir="rtl"] .drawer.product-modal.show { transform: translate(-50%, -50%) sc
   .nav-item.center .nav-ico { width: 46px; height: 46px; }
   .drawer.product-modal { width: calc(100vw - 24px); max-height: 84vh; border-radius: 18px; }
   .product-modal .qv-media { max-height: 190px; }
+  .product-modal .qv-media.qv-cat-espresso {
+    height: min(38vh, 260px);
+    max-height: 260px;
+  }
   .qv-actions { flex-direction: column; }
   .qv-actions .btn { width: 100%; }
   .drawer.cart-sheet { height: calc(100vh - var(--bottomnav-h) - 18px); max-height: calc(100vh - var(--bottomnav-h) - 18px); }
