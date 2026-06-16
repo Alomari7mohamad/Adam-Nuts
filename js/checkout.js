@@ -34,6 +34,31 @@
     };
     return labels[id] ? labels[id][A.lang()] : "";
   }
+
+  function locationLabelFromAddress(address) {
+    if (!address || typeof address !== "object") return "";
+    const locality = address.city || address.town || address.village || address.hamlet ||
+      address.municipality || address.suburb || address.neighbourhood || address.county || "";
+    const country = address.country || "";
+    return [locality, country].filter(Boolean).join("، ");
+  }
+
+  async function reverseGeocodeLocation(coords) {
+    if (!coords || !Number.isFinite(coords.lat) || !Number.isFinite(coords.lng)) return "";
+    const language = A.lang() === "he" ? "he" : "ar";
+    const url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=10&lat=" +
+      encodeURIComponent(coords.lat) + "&lon=" + encodeURIComponent(coords.lng) +
+      "&accept-language=" + encodeURIComponent(language);
+
+    try {
+      const response = await fetch(url, { headers: { Accept: "application/json" } });
+      if (!response.ok) return "";
+      const data = await response.json();
+      return locationLabelFromAddress(data.address) || data.name || "";
+    } catch (_) {
+      return "";
+    }
+  }
   function deliveryFee() {
     if (form.type === "pickup") return 0;
     if (window.AdamCart.subtotal() >= FREE_DELIVERY_MIN) return 0;
@@ -470,7 +495,7 @@
     const body = document.getElementById("checkoutBody");
     const status = body && body.querySelector(".current-location-text");
     if (status) status.textContent = A.t("current_location_loading");
-    navigator.geolocation.getCurrentPosition(pos => {
+    navigator.geolocation.getCurrentPosition(async pos => {
       const lat = pos.coords.latitude.toFixed(6);
       const lng = pos.coords.longitude.toFixed(6);
       form.currentCoords = {
@@ -480,6 +505,8 @@
       };
       form.deliveryArea = areaFromCoords(form.currentCoords);
       form.currentLocation = "https://maps.google.com/?q=" + lat + "," + lng;
+      const detectedPlace = form.deliveryArea ? areaLabel(form.deliveryArea) : await reverseGeocodeLocation(form.currentCoords);
+      if (detectedPlace) form.location = detectedPlace;
       render();
     }, () => {
       if (status) status.textContent = A.t("current_location_failed");
