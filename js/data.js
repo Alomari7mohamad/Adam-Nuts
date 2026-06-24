@@ -65,7 +65,7 @@
 
   const PRODUCTS = [
     /* ---------------- NUTS (by weight) ---------------- */
-    { id: "nuts-1", cat: "nuts", available: false, sub: "seeds", unit: "kg", price: 30, img: im("nuts","nuts-1.jpeg"),
+    { id: "nuts-1", cat: "nuts", available: true, sub: "seeds", unit: "kg", price: 30, img: im("nuts","nuts-1.jpeg"),
       name: { ar: "بزر أسود مملح", he: "גרעינים שחורים מלוחים" },
       desc: { ar: "بزر عبّاد الشمس الأسود المحمّص والمملّح، مقرمش ولذيذ للتسالي.", he: "גרעיני חמנייה שחורים קלויים ומלוחים, פריכים וטעימים לנשנוש." } },
     { id: "nuts-2", cat: "nuts", available: true, sub: "seeds", unit: "kg", price: 30, img: im("nuts","nuts-2.jpeg"),
